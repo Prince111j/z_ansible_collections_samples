@@ -20,12 +20,7 @@
     runtime_ansible_req: "{{ runtime_ansible_req | default([]) }} +[ '{{ item }}.n' ]"
   loop: "{{requires_ansible_version}}"
 
-- name: Ansible requirement check ensuring the Ansible runtime version meets the playbook requirement
-  ansible.builtin.include_tasks:
-    ansible_check.yml
-  with_items: "{{requires_ansible_version}}"
-  loop_control:
-    loop_var: tmp
+
 
 - name: DEBUG(-v) Display ansible_check role variable ansible_version_checks
   ansible.builtin.debug:
