@@ -1,0 +1,30 @@
+###############################################################################
+# Copyright (c) 2020, 2022 IBM CORPORATION
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+
+###############################################################################
+# Description:
+#  This playbook is used to verify connectivity to one or more target systems.
+#
+#  All potential Python and ZOAU installations are output by the playbook
+#  in case the Python or ZOAU installation desired by the user is different
+#  than the one selected by this playbook.
+#
+# Usage:
+#  ansible-playbook -i <inventory> <playbook>
+#   or
+#  ansible-playbook -i "hostaddress," <playbook>
+#
+# Example:
+#  ansible-playbook -i inventory zos-ping.yml
+#   or
+#  ansible-playbook -i "mysystem.to.connect.com," zos_ping.yml
+
+---
+- hosts: WTSC47.CPOLAB.IBM.COM
+  tasks:
+    - name: Install Key ...
+      authorized_key:
+        user: lnxadmin
+        state: present
+        key: "{{ lookup('file', '/home/lnxadmin/.ssh/id_rsa.pub') }}"
