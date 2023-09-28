@@ -15,7 +15,7 @@
 # Note, PYZ and ZOAU environment variables must be configured.
 ################################################################################
 
-PYZ: "/usr/lpp/IBM/cyp/v3r11/pyz"
+PYZ: "/usr/lpp/IBM/cyp/v3r9/pyz"
 ZOAU: "/usr/lpp/IBM/zoautil"
 
 ################################################################################
