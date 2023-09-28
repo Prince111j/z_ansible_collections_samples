@@ -19,7 +19,7 @@
 ###############################################################################
 
 ---
-- hosts: localhost
+- hosts: WTSC47.CPOLAB.IBM.COM
 
   tasks:
     - name: Parse the registry for collection entries
