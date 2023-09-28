@@ -19,7 +19,7 @@
 ###############################################################################
 
 ---
-- hosts: 9.76.61.15
+- hosts: WTSC47.CPOLAB.IBM.COM
 
   tasks:
     - name: Parse the registry for collection entries
