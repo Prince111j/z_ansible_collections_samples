@@ -13,5 +13,5 @@
 source_system:
   hosts:
     zos_host:
-      ansible_host: WTSC47.CPOLAB.IBM.COM
+      ansible_host: 9.76.61.15
       ansible_user: DMJTA1
