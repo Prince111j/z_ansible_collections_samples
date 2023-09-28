@@ -1,0 +1,59 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  collections:
+    - ibm.ibm_zos_core
+  environment: "{{ environment_vars }}"
+  block:
+
+    - name: "[{{current_step_name}}]: Set action step variables"
+      set_fact:
+        task_step_result: {}
+
+    - name: "[{{current_step_name}}]: Collect the member(s) to delete from PDS(s)"
+      set_fact:
+        delete_list_items: "{{delete_list_items | default([]) + [{'src':src_pds + '(' + item.name + ')', 'is_binary': is_binary}]}}"
+      with_items: "{{ wd_step['artifacts'] | default([])}}"
+      vars:
+        current_type: "{{ item | json_query (\"properties[?key == 'type'].value\") | first | lower }}"
+        type: "{{ types| selectattr('type','==',current_type) | first}}"
+        path: "{{ item | json_query (\"properties[?key == 'path'].value\") | first }}"
+        src_pds: "{{ type.pds.name }}"
+        is_binary: "{{type.is_binary if type.is_binary is defined else True}}"
+      no_log:  "{{ wd_no_log_flag }}"
+
+    - name: "[{{current_step_name}}]: Delete the member(s) from PDS(s)"
+      shell: |
+         zowe zos-files delete data-set "{{item.src}}" --for-sure\
+           --zosmf-profile {{zowe_profile}}
+      with_items: "{{delete_list_items}}"
+      delegate_to: localhost
+      register: delete_from_pds_result
+      ignore_errors: true
+
+    - name: "[{{current_step_name}}]: Collect the delete from PDS result"
+      set_fact:
+        task_step_result: "{{ task_step_result | combine ({'delete_from_pds_result':delete_from_pds_result}) }}"
+
+    - name: "[{{current_step_name}}]: Register the delete from PDS result"
+      set_fact:
+        deploy_result_tasks_steps: "{{ deploy_result_tasks_steps + [ task_step_result ] }}"
+
+    - name: "[{{current_step_name}}]: Check if delete from PDS succeeded"
+      fail:
+        msg: "The delete member(s) from PDS failed"
+      when: delete_from_pds_result is failed
+  tags:
+    - delete-from-pds
+
+  rescue:
+    - name : "[{{current_step_name}}]: Store the evidences"
+      include_tasks: "wd_failure.yml"
+        

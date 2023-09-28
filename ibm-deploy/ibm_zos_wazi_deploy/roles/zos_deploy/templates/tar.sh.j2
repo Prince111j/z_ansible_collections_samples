@@ -1,0 +1,10 @@
+#!/bin/sh
+set +e
+tar -C {{ wd_deploy_dir_uss }} -xf {{ wd_deploy_dir_uss }}/*.tar -L T 2>{{ wd_deploy_dir_uss }}/tar.log
+if [ $(grep -v "cannot set uid.gid" {{ wd_deploy_dir_uss }}/tar.log | wc -w) -eq 0 ]
+then
+   exit 0
+else
+   cat {{ wd_deploy_dir_uss }}/tar.log
+   exit -1
+fi

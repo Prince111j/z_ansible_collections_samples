@@ -1,0 +1,33 @@
+//*----------------------------------------------------------------*
+//*  Licensed Materials - Property of IBM                          *
+//*  (c) Copyright IBM Corp. 2021 All Rights Reserved              *
+//*  US Government Users Restricted Rights - Use, duplication or   *
+//*  disclosure restricted by GSA ADP Schedule Contract with       *
+//*  IBM Corp                                                      *
+//*----------------------------------------------------------------*
+//********************************************************************
+//*               BIND - BIND THE DB2 PACKAGE                        *
+//********************************************************************
+//{{item.db2_system.package_jobcard}}
+//JOBLIB   DD  DISP=SHR,
+//             DSN={{item.db2_system.sdsnload}}
+//PKGBIND EXEC PGM=IKJEFT01,DYNAMNBR=20,COND=(4,LT)
+//SYSTSPRT DD  SYSOUT=*
+//SYSPRINT DD  SYSOUT=*
+//SYSUDUMP DD  SYSOUT=*
+//SYSIN    DD  DUMMY
+//SYSTSIN  DD  *
+DSN SYSTEM ({{item.db2_system.subsys}})
+{% for artifact in item.artifacts %}
+BIND  PACKAGE({{item.db2_system.package}}) +
+   MEMBER({{ artifact.name }}) +
+   LIBRARY('{{item.dest_pds}}') +
+   QUALIFIER({{item.db2_system.qualifier}}) +
+   OWNER({{item.db2_system.sqlid}}) +
+   ACTION({{item.db2_system.package_action}}) +
+   ISOLATION(CS) +
+   RELEASE(COMMIT) +
+   ENCODING(EBCDIC)
+{% endfor %}
+END
+/*

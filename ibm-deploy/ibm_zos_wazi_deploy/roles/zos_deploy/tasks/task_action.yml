@@ -1,0 +1,40 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+
+- name: "[{{wd_activity.short_name | lower if wd_activity.short_name is defined else wd_activity.name | lower}}/\
+               {{wd_action.short_name | lower if wd_action.short_name is defined else wd_action.name | lower }}]\
+                : Process action '{{ wd_action.name }}' for activity '{{ wd_activity.name }}'"
+  block:
+
+    - name: "[{{wd_activity.short_name | lower if wd_activity.short_name is defined else wd_activity.name | lower}}>\
+               {{wd_action.short_name | lower if wd_action.short_name is defined else wd_action.name | lower }}]\
+                : Process steps for action '{{ wd_action.name }}' and activity '{{ wd_activity.name }}'"
+      include_tasks: "task_step.yml"
+      loop: "{{ wd_action.steps | default([])}}"
+      loop_control:
+        loop_var: wd_step
+      vars:
+         run_var_name: "{{ 'run_' + wd_activity.short_name + '_' + wd_action.short_name if wd_activity.short_name is defined and wd_action.short_name is defined else ''}}"
+         run_var_name_value: "{{ lookup('vars', run_var_name, default='') }}"
+         run_when: "{{ run_var_name_value if run_var_name_value != '' else  wd_activity |\
+                         ibm.ibm_zos_wazi_deploy.tag_filter (\
+                            wd_activity.tags if wd_activity.tags is defined else None,\
+                            wd_action.tags if wd_action.tags is defined else None,\
+                            None,\
+                            planTags if planTags is defined else wd_deployment_plan.default_tags | join(',') if wd_deployment_plan.default_tags is defined else None ,\
+                            planSkipTags if planSkipTags is defined else wd_deployment_plan.default_skip_tags | join(',') if wd_deployment_plan.default_skip_tags is defined else None ,\
+                            2,
+                            wd_no_log_flag
+                         ) }}"
+      when: run_when == True
+      tags:
+        - always
+
+    

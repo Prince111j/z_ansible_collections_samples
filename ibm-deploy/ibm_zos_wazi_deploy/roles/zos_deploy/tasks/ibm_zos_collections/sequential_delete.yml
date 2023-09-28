@@ -1,0 +1,29 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+
+    - set_fact:
+       wd_delete_list_items: "{{ wd_step['artifacts'] | ibm.ibm_zos_wazi_deploy.wd_artifact_list (wd_deploy_dir_uss, wd_types, False, True, wd_no_log_flag )}}"
+      vars:
+        wd_var_type: "{{ wd_step | json_query (\"properties[?key == 'var_type'].value\") | first | default(default_types if default_types is defined else 'types') }}"
+        wd_types: "{{ lookup('vars',  wd_var_type )}}"
+
+    - name: "[{{current_step_name}}]: Delete the sequential file(s)"
+      include_tasks: "task_zos_data_set.yml"
+      with_items: "{{ wd_delete_list_items| default([]) }}"
+      vars:
+        wd_zos_module:
+          name: "{{ item.src }}"
+          state: absent
+          type: SEQ
+
+  tags:
+    - sequential_delete

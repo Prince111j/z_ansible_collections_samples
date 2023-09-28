@@ -1,0 +1,114 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- block:
+
+    - name: "Validate the presence of required variables"
+      fail:
+        msg: |
+           "The variable wd_deployment_plan_file must provided in command line option '-e wd_deployment_plan_file=deployment_plan_location.yml'."
+      when:
+      - wd_deployment_plan_file is not defined
+
+    - name: "Create deployer base directory localy: {{wd_env.local_dir}}"
+      file:
+        state: directory
+        mode: 0777
+        path: "{{ wd_env.local_dir }}"
+      delegate_to: localhost
+      tags:
+        - always
+
+    - name: "Create temporary directory localy in: {{wd_env.local_dir}}"
+      tempfile:
+        path: "{{ wd_env.local_dir }}"
+        state: directory
+      register: wd_deploy_dir_local
+      delegate_to: localhost
+      tags:
+        - always
+
+    - name: "Register local temporary directory path: {{wd_deploy_dir_local.path}}"
+      set_fact:
+        wd_deploy_dir_local: "{{ wd_deploy_dir_local.path }}"
+        wd_deploy_dir_uss: "{{wd_env.uss_dir}}"
+      tags:
+        - always
+
+    - name: "Read the deployment plan: {{ wd_deployment_plan_file }}"
+      set_fact:
+        wd_deployment_plan: "{{ lookup('file', wd_deployment_plan_file) | from_yaml }}"
+      delegate_to: localhost
+      tags:
+        - always
+
+    - name: "Resolve variables in the deployment plan: {{ wd_deployment_plan_file }}"
+      template:
+       src:  "{{ wd_deployment_plan_file }}"
+       dest:  "{{wd_deploy_dir_local}}/{{ wd_deployment_plan_file | basename }}"
+      delegate_to: localhost
+      tags:
+        - always
+
+    - name: "Read the resolved deployment plan: {{ wd_deployment_plan_file }}"
+      set_fact:
+        wd_deployment_plan="{{ lookup('file', wd_deploy_dir_local + '/' + wd_deployment_plan_file | basename) | from_yaml }}"
+      delegate_to: localhost
+      tags:
+        - always
+
+    - name: "Verify the presence of the steps tasks"
+      task_loc:
+         deployment_plan: "{{wd_deployment_plan}}"
+         role_path: "{{role_path}}"
+         tasks_folder: "{{wd_tasks_folder}}"
+         verbose: "{{wd_no_log_flag | bool}}"
+      tags:
+        - always
+        
+    - name: "Create USS working folder {{wd_env.uss_dir}}"
+      include_tasks: "task_create_uss_folders.yml"
+      tags:
+        - always
+
+    - name: "SMF Record"
+      include_tasks: "task_smf_record.yml"
+      tags:
+        - always
+      when:
+        - wd_deployment_plan_file is defined
+
+    - name: "Process deployment methods activities"
+      include_tasks: "task_activity.yml"
+      loop: "{{ wd_deployment_plan.activities | default([])}}"
+      loop_control:
+        loop_var: wd_activity
+      tags:
+        - always
+
+    - name: "Delete local working folder: {{ wd_deploy_dir_local }}"
+      file:
+        state: absent
+        path: "{{ wd_deploy_dir_local }}"
+      delegate_to: localhost
+      when: delete_working_folder is not defined or delete_working_folder | bool == true
+      tags:
+        - always
+
+    - name: "Delete remote working folder: {{ wd_deploy_dir_uss }}"
+      file:
+        state: absent
+        path: "{{ wd_deploy_dir_uss }}"
+      environment: "{{ environment_vars }}"
+      when:
+      - wd_deploy_dir_uss is defined
+      - wd_deploy_dir_uss != wd_env.uss_dir
+      - delete_working_folder is not defined or delete_working_folder | bool == true
+      tags:
+        - always

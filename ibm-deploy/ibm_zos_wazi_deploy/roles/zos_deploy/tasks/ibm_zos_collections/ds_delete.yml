@@ -1,0 +1,30 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+
+    - name: "[{{current_step_name}}]: Retrieve parameters"
+      set_fact:
+        wd_ds_delete: "{{ lookup('vars',  wd_var_ds_delete) }}"
+      vars:
+        wd_var_ds_delete: "{{ wd_step | json_query (\"properties[?key == 'var_ds_delete'].value\") | first | default('ds_delete_lsds_default') }}"
+
+    - name: "[{{current_step_name}}]: Run File Deletion"
+      include_tasks: "task_zos_data_set.yml"
+      vars:
+        wd_zos_module:
+          name: "{{ item.name }}"
+          type: "{{ item.type if item.type is defined else omit}}"
+          state: absent
+      with_items: "{{wd_ds_delete}}"
+      when: wd_ds_delete|length > 0
+      
+  tags:
+    - ds_delete

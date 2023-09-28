@@ -1,0 +1,35 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+
+    - name: "[{{current_step_name}}]: Retrieve parameters"
+      set_fact:
+        wd_job_submit: "{{ lookup('vars',  wd_var_job_submit)}}"
+      vars:
+        wd_var_job_submit: "{{ wd_step | json_query (\"properties[?key == 'var_job_submit'].value\") | first | default('job_submit_default') }}"
+
+    - name: "[{{current_step_name}}]: Run JCL"
+      include_tasks: "task_zos_job_submit.yml"
+      vars:
+        wd_zos_module:
+          encoding:
+            from: "{{ wd_job_submit.encoding.from if wd_job_submit.encoding.from is defined else omit}}"
+            to: "{{ wd_job_submit.encoding.to if wd_job_submit.encoding.to is defined else omit}}"
+          location: "{{ wd_job_submit.location if wd_job_submit.location is defined else omit }}"
+          max_rc: "{{ wd_job_submit.max_rc if wd_job_submit.max_rc is defined else omit}}"
+          return_output: "{{ wd_job_submit.return_output if wd_job_submit.return.output is defined else omit}}"
+          src: "{{ wd_job_submit.src if wd_job_submit.src is defined else omit}}"
+          volume: "{{ wd_job_submit.volume if wd_job_submit.volume is defined else omit}}"
+          wait_time_s: "{{ wd_job_submit.wait_time_s if wd_job_submit.wait_time_s is defined else omit}}"
+
+  tags:
+    - job_submit
+  

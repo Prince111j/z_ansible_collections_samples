@@ -1,0 +1,36 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+
+    - set_fact:
+       wd_backup_list_items: "{{ wd_step['artifacts'] | ibm.ibm_zos_wazi_deploy.wd_artifact_list (wd_deploy_dir_uss, wd_types, True, False, wd_no_log_flag )}}"
+      vars:
+        wd_var_type: "{{ wd_step | json_query (\"properties[?key == 'var_type'].value\") | first | default(default_types if default_types is defined else 'types') }}"
+        wd_types: "{{ lookup('vars',  wd_var_type )}}"
+
+
+    - name: "[{{current_step_name}}]: Copy the sequential files to backup sequential file(s)"
+      include_tasks: "task_zos_copy.yml"
+      with_items: "{{ wd_backup_list_items| default([]) }}"
+      vars:
+        wd_zos_module:
+          src: "{{ item.src }}"
+          dest: "{{ item.dest }}"
+          remote_src: true
+          is_binary: "{{ item.is_binary }}"
+          ignore_error_message: "{{ 'Source data set ' + item.src + ' does not exist'}}"
+          backup: false
+          force: true
+      when:
+        - item.type.ds is defined
+
+  tags:
+    - sequential_archive

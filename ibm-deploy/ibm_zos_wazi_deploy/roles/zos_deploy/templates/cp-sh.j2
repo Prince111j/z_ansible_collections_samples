@@ -1,0 +1,72 @@
+#!/bin/sh
+PRGPATH="`dirname "$0"`"
+return_code=0
+mkdir -p {{ wd_deploy_dir_uss }}
+{% for item in wd_items %}
+{% if '(' in item.src%}
+{% set source = "\"//'" +  item.src +"'\"" %}
+{% set src_dataset = True %}
+{% else%}
+{% set source = item.src %}
+{% set src_dataset = False %}
+{% endif %}
+{% if '(' in item.dest%}
+{% set destination = "\"//'" +  item.dest +"'\"" %}
+{% else%}
+{% set destination = item.dest %}
+{% endif %}
+{% if item.is_load -%}
+{% if wd_zos_module.is_backup == True -%}
+export CP_OPTION="-X"
+{% else -%}
+export CP_OPTION="-X -I"
+{% endif %}
+{% elif item.is_binary -%}
+export CP_OPTION="-F bin"
+{% else -%}
+export CP_OPTION=""
+{% if src_dataset == False and item.encoding is defined -%}
+rm -f {{ source }}.txt
+echo "cat {{ source }} | iconv -f {{ item.encoding.from }} -t {{ item.encoding.to }} > {{ source }}.txt"
+cat {{ source }} | iconv -f {{ item.encoding.from }} -t {{ item.encoding.to }} > {{ source }}.txt
+{% set source = item.src + '.txt' %}
+{% endif %}
+{% endif %}
+{% if wd_ignore_missing is defined and wd_ignore_missing == True %}
+{% if src_dataset == False %}
+if [ -f  {{ source }} ]
+then
+  echo "cp $CP_OPTION {{ source }} {{ destination }}"
+  cp $CP_OPTION {{ source }} {{ destination }}
+  rc=$?
+else
+  echo "Ignore missing file {{ source }}"
+  rc=0
+fi
+{% else -%}
+echo "cp $CP_OPTION {{ source }} {{ destination }}"
+cp $CP_OPTION {{ source }} {{ destination }} > $PRGPATH/copy.log 2>&1
+rc=$?
+if [ $rc -ne 0 ]
+then
+  grep -q -E "FSUM6258|EDC5049I" $PRGPATH/copy.log
+  rc=$?
+  if [ $rc -ne 0 ]
+  then
+    cat $PRGPATH/copy.log
+  else
+    echo "Ignore missing file {{ source }}"
+  fi
+fi
+{% endif %}
+{% else -%}
+echo "cp $CP_OPTION {{ source }} {{ destination }}"
+cp $CP_OPTION {{ source }} {{ destination }}
+rc=$?
+{% endif %}
+if [ $rc -ne 0 ]
+then
+  exit $rc
+fi
+{% endfor %}
+exit 0

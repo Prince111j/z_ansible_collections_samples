@@ -1,0 +1,20 @@
+//*----------------------------------------------------------------*
+//*  Licensed Materials - Property of IBM                          *
+//*  (c) Copyright IBM Corp. 2022 All Rights Reserved              *
+//*  US Government Users Restricted Rights - Use, duplication or   *
+//*  disclosure restricted by GSA ADP Schedule Contract with       *
+//*  IBM Corp                                                      *
+//*----------------------------------------------------------------*
+//********************************************************************
+//*               DPCKG  -  TAR PKG                                  *
+//********************************************************************
+//{{ zowe_exsh_jobcard }}
+//CHMOD   EXEC PGM=BPXBATCH,
+//  PARM='sh chmod +x {{ wd_deploy_dir_uss }}/{{sh_file}}'
+//STDOUT  DD SYSOUT=*
+//STDERR  DD SYSOUT=*
+/*
+//RUN     EXEC PGM=BPXBATCH,
+//  PARM='sh {{ wd_deploy_dir_uss }}/{{sh_file}}'
+//STDOUT  DD SYSOUT=*
+//STDERR  DD SYSOUT=*

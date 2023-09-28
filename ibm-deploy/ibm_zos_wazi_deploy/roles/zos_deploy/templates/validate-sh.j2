@@ -1,0 +1,183 @@
+#!/bin/sh
+PRGPATH="`dirname "$0"`"
+global_rc=0
+ROOT_FOLDER={{wd_deploy_dir_uss}}
+TEMP_FOLDER={{wd_deploy_dir_uss}}/temp.{{wd_timestamp}}
+mkdir -p $TEMP_FOLDER
+
+validate()
+{
+    CP_OPTION=$1
+    MEMBER=$2
+    TYPE=$3
+    INPUT_FILE=$4
+    FINGER_PRINT=$5
+    IS_DEST_DATASET=$6
+    IGNORE_MISSING=$7
+    ENC_OPTION=$8
+    to_validate=true
+    IS_SEQUENTIAL=$9
+    if [ "$IS_DEST_DATASET" = "True" ]
+    then
+        OUT=$TEMP_FOLDER/$MEMBER.$TYPE
+        rm -f $OUT
+		if [ "$VALIDATE_DEBUG" = "True" ]
+        then
+          echo "** cp $CP_OPTION \"${INPUT_FILE}\" $OUT"
+        fi
+        cp $CP_OPTION "${INPUT_FILE}" $OUT > $PRGPATH/validate.log 2>&1
+        rc=$?
+        if [ $rc -ne 0 ]
+        then
+            if [ "$IS_SEQUENTIAL" = "False" ]
+            then
+              grep -q "FSUMF140 IEWBIND function" $PRGPATH/validate.log
+              if [ $? -eq 0 ]
+              then
+                # Bypass Ansible copy mode for load modules (case opened in Ansible).
+                export CP_OPTION="-F bin"
+                cp $CP_OPTION "${INPUT_FILE}" $OUT > $PRGPATH/validate.log 2>&1
+                rc=$?
+              fi  
+            fi
+        fi
+        if [ $rc -ne 0 ]
+        then
+          if [ "$IS_SEQUENTIAL" = "False" ]
+          then
+            grep -q "An attempt was made to open a nonexistent file for read" $PRGPATH/validate.log
+          else
+            grep -q "The specified file name could not be located" $PRGPATH/validate.log
+          fi  
+          rc=$?
+          if [ $rc -ne 0 ]
+          then
+            cat $PRGPATH/validate.log
+          else
+            if [ "$IGNORE_MISSING" = "True" ]
+            then
+                echo "*! WARNING: Ignore missing file \"${INPUT_FILE}\""
+                rc=0
+                to_validate=false
+            else
+                echo "*? ERROR: Missing file \"${INPUT_FILE}\""
+                rc=0
+                to_validate=false
+                global_rc=1
+            fi
+          fi
+        fi
+        if [ $to_validate = true ]
+        then
+          if [ "$CP_OPTION" = "-F bin" -o "$CP_OPTION" = "" ]
+          then
+            if [ "$ENC_OPTION" != "" ]
+            then
+              OUT2=$TEMP_FOLDER/$MEMBER.$TYPE.ENC
+              rm -f $OUT2
+              $ENC_OPTION $OUT > $OUT2
+          	  cmd=$(sha256 $OUT2)
+          	else  
+          	  cmd=$(sha256 $OUT)
+            fi
+            if [ "$VALIDATE_DEBUG" = "True" ]
+            then
+              echo $cmd
+            fi
+            current_fingerprint=$(echo $cmd | awk -F"= " '{print $2}')
+          fi  
+          if [ "$CP_OPTION" = "-X -I" ]
+          then
+            current_fingerprint=$(sh $ROOT_FOLDER/getidrb.sh $OUT)
+          fi 
+          if [ "$current_fingerprint" != "${FINGER_PRINT}" ]
+          then
+            echo "*? ERROR: Failed to validate \"${INPUT_FILE}\" : The registred fingerprint ${FINGER_PRINT} not equal to current fingerprint $current_fingerprint"
+            global_rc=1 
+          else
+            echo "** Succeeded to validate \"${INPUT_FILE}\" (fingerprint : ${FINGER_PRINT})"
+            rc=0  
+          fi
+        fi
+    else
+        if [ -f $INPUT_FILE ]
+        then
+            if [ "$ENC_OPTION" != "" ]
+            then
+              OUT1=$TEMP_FOLDER/$MEMBER.$TYPE
+              rm -f $OUT1
+              cp $CP_OPTION "${INPUT_FILE}" $OUT1 > $PRGPATH/validate.log 2>&1
+              rc=$?
+              OUT=$TEMP_FOLDER/$MEMBER.$TYPE.ENC
+              $ENC_OPTION $OUT1>$OUT
+            else
+              OUT=$INPUT_FILE
+              rc=0  
+            fi
+            if [ $rc -eq 0 ]
+            then    
+              cmd=$(sha256 $OUT)
+              current_fingerprint=$(echo $cmd | awk -F"= " '{print $2}')
+              if [ "$current_fingerprint" != "${FINGER_PRINT}" ]
+              then
+                echo "*? ERROR: Failed to validate \"${INPUT_FILE}\" : The registred fingerprint ${FINGER_PRINT} not equal to current fingerprint $current_fingerprint"
+                global_rc=1 
+              else
+                echo "** Succeeded to validate \"${INPUT_FILE}\" (fingerprint : ${FINGER_PRINT})"
+                rc=0  
+              fi
+            fi    
+        else
+            if [ "$IGNORE_MISSING" = "True" ]
+            then
+                echo "*! WARNING: Ignore missing file \"${INPUT_FILE}\""
+                rc=0
+                to_validate=false
+            else
+                echo "*? ERROR: Missing file \"${INPUT_FILE}\""
+                rc=0
+                to_validate=false
+                global_rc=1
+            fi
+        fi
+    fi
+}
+
+
+{% for item in wd_items %}
+{% if '(' in item.dest%}
+{% set destination = "//'" +  item.dest +"'" %}
+{% set is_dest_dataset = True %}
+{% elif item.is_sequential %}
+{% set destination = "//'" +  item.dest +"'" %}
+{% set is_dest_dataset = True %}
+{% else%}
+{% set destination = item.dest %}
+{% set is_dest_dataset = False %}
+{% endif %}
+{% if item.is_load -%}
+export CP_OPTION="-X -I"
+export ENC_OPTION=""
+{% elif item.is_binary -%}
+export CP_OPTION="-F bin"
+export ENC_OPTION=""
+{% else -%}
+export CP_OPTION=""
+{% if item.encoding is defined -%}
+export ENC_OPTION="iconv -f {{item.encoding.to}} -t {{item.encoding.from}} "
+{% else%}
+export ENC_OPTION=""
+{% endif %}
+{% endif %}
+{% if wd_ignore_missing is defined and wd_ignore_missing == True %}
+wd_ignore_missing=True
+{% else%}
+wd_ignore_missing=False
+{% endif %}
+validate "${CP_OPTION}" "{{ item.name }}" "{{ item.type.type }}" "{{ destination }}" "{{ item.fingerprint }}" "{{ is_dest_dataset }}" "{{ wd_ignore_missing }}" "${ENC_OPTION}" "{{item.is_sequential}}"
+if [ $rc -ne 0 ]
+then
+  exit $rc
+fi
+{% endfor %}
+exit $global_rc

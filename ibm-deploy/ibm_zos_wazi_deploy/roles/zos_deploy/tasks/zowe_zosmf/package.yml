@@ -1,0 +1,136 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "Process package"
+  block:
+
+    - name: "[{{current_step_name}}]: Set action step variables"
+      set_fact:
+        task_step_result: {}
+        deploy_dir_uss: "{{ wd_env.uss_dir }}/{{zowe_temp_uss}}"
+
+    - name: "[{{current_step_name}}]: Set the package location"
+      set_fact:
+        wd_package_file: "{{ deployment_plan.metadata.annotations.package.path if deployment_plan.metadata.annotations.package is defined else None }}"
+      when: wd_package_file is not defined
+
+    - name: "[{{current_step_name}}]: Check if {{ wd_package_file }} exists"
+      stat:
+        path: "{{ wd_package_file }}"
+        checksum_algorithm: sha256
+      delegate_to: localhost
+      register: payload_st
+
+    - name: "[{{current_step_name}}]: Verify the checksum of the package {{ wd_package_file }}"
+      fail:
+        msg: "The current package checksum {{ payload_st.stat.checksum }} differ from the checksum in the deployment plan {{ deployment_plan.metadata.annotations.package.sha256 }}"
+      delegate_to: localhost
+      failed_when: deployment_plan.metadata.annotations.package.sha256 != payload_st.stat.checksum
+      when: payload_st.stat.exists
+
+    - name: "[{{current_step_name}}]: Check deployer base directory on USS: {{ wd_env.uss_dir }}"
+      shell: |
+         zowe zos-files list uss-files {{ wd_env.uss_dir }} \
+           --zosmf-profile {{ zowe_profile }}
+      delegate_to: localhost
+      when: payload_st.stat.exists
+      ignore_errors: true
+      register: check_deploy_base_dir_uss
+      no_log: yes
+
+    - name: "[{{current_step_name}}]: Create deployer base directory on USS: {{ wd_env.uss_dir }}"
+      shell: |
+         zowe zos-files create uss-directory {{ wd_env.uss_dir }} \
+           --mode rwxr-xr-x \
+           --zosmf-profile {{ zowe_profile }}
+      delegate_to: localhost
+      when: payload_st.stat.exists and check_deploy_base_dir_uss.stdout == ''
+      register: deploy_base_dir_uss
+
+    - name: "[{{current_step_name}}]: Collect the Create deployer base directory on USS result"
+      set_fact:
+        task_step_result: "{{ task_step_result | combine ({'deploy_base_dir_uss':deploy_base_dir_uss}) }}"
+      when: payload_st.stat.exists
+
+    - name: "[{{current_step_name}}]: Check temp directory on USS: {{ deploy_dir_uss }}"
+      shell: |
+         zowe zos-files list uss-files {{ deploy_dir_uss }} \
+           --zosmf-profile {{ zowe_profile }}
+      delegate_to: localhost
+      when: payload_st.stat.exists
+      ignore_errors: true
+      register: check_deploy_dir_uss
+#      no_log: yes
+
+    - name: "[{{current_step_name}}]: Delete temporary directory on USS: {{ deploy_dir_uss }} if exists"
+      shell: |
+         zowe zos-files delete uss-file {{ deploy_dir_uss }} \
+           --recursive \
+           --for-sure \
+           --zosmf-profile {{ zowe_profile }}
+      delegate_to: localhost
+      register: check_deploy_dir_uss_deleted
+      when: payload_st.stat.exists and check_deploy_dir_uss.stdout != ''
+
+    - name: "[{{current_step_name}}]: Create temporary directory on USS: {{ deploy_dir_uss }}"
+      shell: |
+         zowe zos-files create uss-directory {{ deploy_dir_uss }} \
+           --mode rwxr-xr-x \
+           --zosmf-profile {{ zowe_profile }}
+      delegate_to: localhost
+      when: payload_st.stat.exists and (check_deploy_dir_uss.stdout == '' or check_deploy_dir_uss_deleted.stdout == "USS File or directory deleted successfully.")
+      register: deploy_dir_uss_created
+
+    - name: "[{{current_step_name}}]: Collect the Create temporary directory on USS result"
+      set_fact:
+        task_step_result: "{{ task_step_result | combine ({'deploy_dir_uss_created':deploy_dir_uss_created}) }}"
+      when: payload_st.stat.exists
+
+    - name: "[{{current_step_name}}]: Send {{ wd_package_file }} to USS: {{ deploy_dir_uss }}"
+      shell: |
+         zowe zos-files upload file-to-uss {{ wd_package_file }} {{ deploy_dir_uss }}/{{ wd_package_file | basename}} -b \
+           --zosmf-profile {{ zowe_profile }}
+      delegate_to: localhost
+      when: payload_st.stat.exists
+      register: send_package_result
+
+    - name: "[{{current_step_name}}]: Collect the send package result"
+      set_fact:
+        task_step_result: "{{ task_step_result | combine ({'send_package_result':send_package_result}) }}"
+
+    - name: "[{{current_step_name}}]: Register the send package result"
+      set_fact:
+        deploy_result_tasks_steps: "{{ deploy_result_tasks_steps + [ task_step_result ] }}"
+      when: payload_st.stat.exists and send_package_result is failed
+
+    - name: "[{{current_step_name}}]: Create tar.sh file"
+      template:
+        src: "tar.sh.j2"
+        dest: "{{deploy_dir_local}}/tar.sh"
+        mode: 0644
+      delegate_to: localhost
+
+    - name : "[{{current_step_name}}]: Extract {{ wd_package_file }}"
+      include_tasks: "task_jcl_run_sh.yml"
+      vars:
+        - sh_file: tar.sh
+        - jcl_file: execshell.jcl
+      when: payload_st.stat.exists
+
+    - name: "[{{current_step_name}}]: Register the extract package result"
+      set_fact:
+        deploy_result_tasks_steps: "{{ deploy_result_tasks_steps + [ task_step_result ] }}"
+      when: payload_st.stat.exists
+
+  tags:
+    - send-package
+
+  rescue:
+    - name : "[{{current_step_name}}]: Store the evidences"
+      include_tasks: "wd_failure.yml" 

@@ -1,0 +1,43 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+        
+    - name: "[{{current_step_name}}]: Retrieve parameters"
+      set_fact:
+        wd_ds_create: "{{ lookup('vars',  wd_var_ds_create) }}"
+      vars:
+        wd_var_ds_create: "{{ wd_step | json_query (\"properties[?key == 'var_ds_create'].value\") | first | default('ds_create_lsds_default') }}"
+
+    - name: "[{{current_step_name}}]: Run dataset creation"
+      include_tasks: "task_zos_data_set.yml"
+      vars:
+        wd_zos_module:
+          batch: "{{ item.spec.batch if item.spec.batch is defined else omit}}"
+          block_size: "{{ item.spec.block_size if item.spec.block_size is defined else omit}}"
+          directory_blocks: "{{ item.spec.directory_blocks if item.spec.directory_blocks is defined else omit}}"
+          key_length: "{{ item.spec.key_length if item.spec.key_length is defined else omit}}"
+          key_offset: "{{ item.spec.key_offset if item.spec.key_offset is defined else omit}}"
+          name: "{{ item.name }}"
+          record_format: "{{ item.spec.record_format if item.spec.record_format is defined else omit}}"
+          record_length: "{{ item.spec.record_length if item.spec.record_length is defined else omit}}"
+          replace: "{{ item.spec.replace if item.spec.replace is defined else omit}}"
+          sms_data_class: "{{ item.spec.sms_data_class if item.spec.sms_data_class is defined else omit}}"
+          sms_management_class: "{{ item.spec.sms_management_class if item.spec.sms_management_class is defined else omit}}"
+          sms_storage_class: "{{ item.spec.sms_storage_class if item.spec.sms_storage_class is defined else omit}}"
+          space_primary: "{{ item.spec.space_primary if item.spec.space_primary is defined else omit}}"
+          space_secondary: "{{ item.spec.space_secondary  if item.spec.space_secondary is defined else omit}}"
+          space_type: "{{ item.spec.space_type if item.spec.space_type is defined else omit}}"
+          type: "{{ item.spec.type if  item.spec.type is defined else omit}}"
+          volumes: "{{item.spec.volumes if item.spec.volumes is defined else omit}}"
+      with_items: "{{wd_ds_create}}"
+      when: wd_ds_create|length > 0
+  tags:
+    - ds_create

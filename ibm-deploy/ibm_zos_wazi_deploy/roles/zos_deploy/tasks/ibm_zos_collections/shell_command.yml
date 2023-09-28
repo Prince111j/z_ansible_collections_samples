@@ -1,0 +1,35 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022, 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "Launch shell"
+  block:
+    - name: "[{{current_step_name}}]: Retrieve parameters"
+      set_fact:
+        wd_shell_command: "{{ lookup('vars',  wd_var_shell_command)}}"
+      vars:
+        wd_var_shell_command: "{{ wd_step | json_query (\"properties[?key == 'var_shell_command'].value\") | first | default('shell_command_default') }}"
+
+    - name: "{{current_step_name}}]: Execute shell on localhost "
+      shell: "{{ wd_shell_command.cmd if wd_shell_command.cmd is defined else omit}}"
+      become: "{{wd_shell_command.become if wd_shell_command.become is defined  else omit}}"
+      become_method: "{{wd_shell_command.become_method if wd_shell_command.become_method is defined else omit}}"
+      become_user: "{{wd_shell_command.become_user if wd_shell_command.become_user is defined else omit}}"
+      become_flags: "{{wd_shell_command.become_flags if wd_shell_command.become_flags is defined else omit}}"
+      delegate_to: localhost
+      register: wd_local_shell_result
+      when: wd_shell_command.delegate == True
+
+    - name: "{{current_step_name}}]: Execute shell on remote "
+      environment: "{{ environment_vars }}"
+      shell: "{{ wd_shell_command.cmd if wd_shell_command.cmd is defined else omit}}"
+      register: wd_remote_shell_result
+      when: wd_shell_command.delegate == False
+
+  tags:
+    - shell

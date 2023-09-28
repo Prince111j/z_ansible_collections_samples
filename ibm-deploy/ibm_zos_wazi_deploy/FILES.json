@@ -1,0 +1,733 @@
+{
+ "files": [
+  {
+   "name": ".",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "meta",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "meta/runtime.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "d5e7544de3f7c8e5c68a6a8edd9bf64fac354d8dfac2a5213989e6a794ea89c3",
+   "format": 1
+  },
+  {
+   "name": "meta/ibm_zos_deploy_meta.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "a513c5e4445d22b6f4705d6b4d49d931fda504a4e896dfcb46a38729f759c2f9",
+   "format": 1
+  },
+  {
+   "name": "meta/execution-environment.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e2350e2fe388c7e1f9a459a4cb3ad9a70c14f7b65ca2a8af334ddefda869a58d",
+   "format": 1
+  },
+  {
+   "name": "plugins",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "plugins/filter",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "plugins/filter/tag_filter.py",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "dca4819e2b796f7ab5765701291d853d1ba1d3815fd059fcb108608653781386",
+   "format": 1
+  },
+  {
+   "name": "plugins/filter/list_filter.py",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "57d8a33f77304ddbe665842382cf8b5575b0e3dd1e5aa1555c88d03199b46279",
+   "format": 1
+  },
+  {
+   "name": "plugins/callback",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "plugins/callback/cb_evidences.py",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "eea4f0c5a12b84a295dca3c8063be6b786b40c4a30864fe877b88b02644734f0",
+   "format": 1
+  },
+  {
+   "name": "plugins/action",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "plugins/action/task_loc.py",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "54406bdfeb27324acafb4854edfaae78f60c5f96510696e323d89621db3b43d6",
+   "format": 1
+  },
+  {
+   "name": "requirements.txt",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "fe4583af1ec6453bcc4d1dd6833bcb1b659cdab89697f225f0c502fafe426499",
+   "format": 1
+  },
+  {
+   "name": "README.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "63c8c9795f82ff34ba937dae011ac43b84eeddc9c864faad866c01bcee0064a1",
+   "format": 1
+  },
+  {
+   "name": "roles",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/meta",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/meta/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "737a4e2e6e57eea4fcdb0691e8cfe266515173e64553749e264644662dc9658f",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "f1074357f780bc3427dd897845fd53fcb9b80cc7ca35a33f527d63eb5ee91b28",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_zos_find.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "30587e057bdd430e27f945936497e4023d52c44c3f382c2386be44939769a954",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_cmci_action.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "873bbb8edac46c6fdfa29e96a5c3e2ccdf9965e7250505e8327744587b52e7a0",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_cmci_update.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "c5e7277d335757ba6ec572cdc9f456c1851700e8eefa212808a7231f792f4288",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_zos_job_query.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "1801ea815fe9ba1e79d58f3b30af53357fcf668d00f3d03c5cf6dec974c35497",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_zos_fetch.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e4ba8968af8c6fad210b860a9b23c4aea894910a02a749650badd483cbb20d2a",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_create_uss_folders.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "9f214ae04b26dda732bba2c6ad94e7769e4096a0d5b14c9edcd721a4b3c2cd88",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_action.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "f382c5b5d4a69100dbc3c8b873cc36bed9030581b4fe36edb3d2f571c6cf4a98",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_zos_data_set.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "a1e4f189d12710729cb0b1a92f7c9d1027b95e9f7072ee1fb3a50b3b58346d50",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_step.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "18d553f2b1779fcc61e3b7eb29ee37e3371a57377bcc53d5044fbfc5f0a7fec9",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_cmci_delete.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "035a1ed70c9acde446d4c87579ae23a0983744b1183b7a249a0e83ef8b662272",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/db2_bind_plan.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "f2bfe61a2bd9d5bd763c2373211517647b4fbb04f28b9a9d2bc5855eec378756",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/cics_cmci_prog_delete.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "28db99c0eb8ae126209ecfc546d2eda2b74741f69e3292a2fbff8913a72d6890",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/package.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "ab75a096a938ea093457cd0ae79102e061b9bc01461af85c852b9a4a64e2ab0d",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/member_copy.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "2a1fdde87109015a6db44652f39d36a36afd641d9cf89cf79ff2db4576d0cf8c",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/cics_cmci_prog_update.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "6813c2071bf49bf05db4290044cefbcc837443e3ef064da401e2ad668b82200d",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/member_delete.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "ec3c0a7623698fafd47f8c31d73dad00b4d4efcc192a790815e1e9c7e3971738",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/member_archive.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "a03991df17316980e9588624dbebc25e243c093b1b4ea3b93e2d2a4178a647da",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/common",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/common/output_jcl.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "dd129f25e06b57008d9e2ba75c7769a64b1f39bade9c320e8cfdffe3ee6880ae",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/common/zowe_cics_command.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "c1fd665683ff130120923dc88544d0b2b136d25492231b8de2800a65a09823d4",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/common/jcl_run_sh.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "9f5505e4fa45054481c7b6b51b33c564e1bfbe06db846730668fa4d42779dba6",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/common/zowe_create_pds.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "3ad3d3dd9e0c0dc40e37797854bd33d6fabb591707e63dc6c92f0c5e735ff95f",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/db2_bind_package.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "3c9ff7e1f24c90c4113c6c02f28316175ea8366c6737879b0bbfe278a41e3e57",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/zowe_zosmf/cics_cmci_prog_create.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "9371ea2a659c7af8a1753fd1be26269f1e7fec688d52638f62a415dae7b25298",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_zos_operator.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "0d38ae823590bbd1b1a16b5f908af89502bf526e70cd31397e8a87a10511a8a7",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_fast_copy.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "160bf9cb884ffc98e43e5cdfcc801f1c81450e235f8cebfede52e70e3ed4440f",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_action_loop.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "b7fa3b8995f6490e1f5a7f58749c8111152bd8b20431388925dae2f240cf6a69",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_copy.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "520321a8b3a3787112b896d6f61ae8bb6c03f16be0910a7937c99c8a3a3670bc",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/template.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "4ed5f3858478bd7205080fe3bb71865c9ec71e09ab90a0f55e68b7b3caa07393",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/include_vars_item.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "542d09f3513edd1c3e1f9452493cff05744a1b5295dc820af9d6be14963ea52c",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/db2_bind_plan.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "6c88f9f0e0ecf739f61d84e095e1d1a1db45d4c6e21133224be9c61a9614c3fa",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/sequential_delete.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "ce4f7cdf5fb1834f9e298888fd042ba45d2775d1696624fe01bc2c1a8d9da46d",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/uss_delete.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "dbb1616a8fc00e4b5e3c587ad3494a074db7151f4925b938839505f90c90b9b0",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/cics_cmci_prog_delete.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "8f96155282e1664dafbf5c97ea308f3f7ce6eb7c0332583f68aa83df85c385b4",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/package.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "1a1967d2a127b364d27389449def0eed8926ecfd248c1a2ff186e01a2dc64022",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/ds_delete.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "d5c02f72587d74f04b207b0f485bb9e58d307487a0ac2a17bbac0c4c865a9cd6",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/sequential_validate.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "2dcf849f9c7a726868b79466ebc5717128534c058bf7722503b9276555985b50",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/member_copy.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "c116f465466e96266c04dcdc280f7f48044e991c94ac297c2c5277aede3506f9",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/system_command.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "23c0126d298e63a5bb3130f94ffbef10681e668d515cde7dc872f33e044a12d5",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/uss_archive.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "c5ee19102217fa8f418d013b27ebcf65320b72ec69b76998b4fdab37a6c118c7",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/cics_cmci_prog_update.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "6d607bd9805021278bedfce5386824076ac54be92ad7f45df82cf259cbccfa6f",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/uss_validate.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "474ef58d95a3315286cfd45967e1c85834349e9631ff83ad917a12f1c1ed069a",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/job_submit.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "88ac2c15fb98e4097821db28ed52ad0203dbe2232a6a43d6586f35b4b23342c1",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/ds_create.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "a7643c862046937e3bd6d7332a7da7687a37e17ae565f82c53f5c1c92cd6001d",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/member_delete.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "8252dce08fd2a840fb03b2aa8c957e75993d7c9a0af49ffeea8215aaf81f9beb",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/shell_command.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e031daa6a77446915204e681e47e4ca66826dafd18ac1577d46bf426eb6d9828",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/member_archive.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "fb0be538233414f6799c88b56b00a8f3c51b11a9f0e0d50154b2280b1f5d26a4",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/member_validate.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "44041c1da70e441052916af885e685a9a360d675391db1fcab8b74ab58772db1",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/member_restore.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "8c3c57d7d3db7217baf93f670dc073ee1dbf7796abc449e67f2104c4f15dcf8d",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/sequential_copy.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "614e570a1eddae3112467cdfb12b9f6955123fbe0a92eef86ce1e6566be4d91b",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/include_vars.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "52957598a53ffa743f46b013e58f95ba1b2f3faef958079b2bab5ead437bc269",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/db2_bind_package.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "a4120f74b3fb9aea06c6f9713e3d8c184b36bfcef65174c3c61e229c5dd9bf3e",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/uss_copy.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "674971f7a6b2d3fd1095ba750522ee60ec06a274dbb31ebb6cd3e932ad72a603",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/cics_cmci_prog_create.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "73d5898b940d8ebd1c1fe0386ad92e5f648c267558449dfe43ea31880ceea34f",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/ibm_zos_collections/sequential_archive.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "2ec2fac4310c2c1be10f92fd667245ae81a126d39bb0949a2a09de73e5131bac",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_activity.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "8c7c061d9f5dec0d4708a4376256276d1a4f19aea6186f05593f15bbd084bb9c",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_cmci_create.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "7f5153f76b810a021598f483195cf3ea7a6c83b73426c88cc3ab15dec1bd8b24",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_zos_backup_restore.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "eba6e0d456707d4e3b9ddbffe8381295de2475768273aef40275d4a54a259a4c",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_deploy.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "d422bf593443c780ae22b72e76d3a06cb40348b7f4e73a92c3af21024cd96f4c",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_zos_job_submit.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "673d3c77fc67488247817399a9010d24c4a080dc18f2ee9438b9358062f0b340",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_zos_copy.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "99d8cd9eac679c0672484ff0d4a38fc0ea35bc0f4fabdde98e05c9027b03de48",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/tasks/task_smf_record.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "f35b2d62cbd4e545d1e7030cf2506804b0cd44ee6eea0d4457edcc825840c417",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/files",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/files/getidrb.sh",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "dbcfc8aab9a20a0a9846fc5dd853740ec113926af32766114428e9ea7f8f30b0",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/files/getidrb",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "2ed2e7744a91f074b51b6c39c2bf20a2854ff91969f764eaa56651e7bcc03fab",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/files/smf-record",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "53149c03fac1e6636b528ca42821ee751b92192ac58b2deed57dc52d5fcb7185",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/files/smf-record.sh",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "38a6d410b21ca21c24a92bbc396c7f46130fc4e74344ad2b388c164803bf3ade",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/templates",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/templates/bind-plan.jcl.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "462c4b442cb5e35a5a2609f89d8e3fa550dba7462467f75685b1e447aa5983a1",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/templates/validate-sh.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "d25ce4d88fb91d1762429c7b32e0fedafcea78d9f3faf9807f181772caf818c7",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/templates/tar.sh.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "156e7b6b7937ddab6807da301e6f5fab8453a922e183ac50b28d310e9a76268f",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/templates/cp-sh.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "abd347b044727a93b16f56a2de7201cd11f9f3a28a846dd7385ec36502ebd140",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/templates/execshell.jcl.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "9ba96caf1e50b89c1c28c0686921c18d0d611cdb41909173c331d7db49402469",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/templates/bind-package.jcl.j2",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "55d405225423c2086b80e77a5bddc3416d38591e20ac9bd864b68de3d2725db6",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/vars",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/vars/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "9e51d81a4e06f2261b350e436bdc446a4e3d86cd57b66fdca0d21ee0349d5a4f",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/defaults",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/defaults/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "23f8afeaff075184d6349d158d0cdb45df7e5bada96cd6e13bba27e3d52f3520",
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/handlers",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "roles/zos_deploy/handlers/main.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "5c908c262efb33b21af380743afa0c61a3ee4ce7ceee4452738100d77b9f292e",
+   "format": 1
+  },
+  {
+   "name": "bindep.txt",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "8ba33b0f32d10cd86eaa599194b7c48a204931ef2db06433ff3afb2fb2d6bbf3",
+   "format": 1
+  }
+ ],
+ "format": 1
+}

@@ -1,0 +1,44 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  environment: "{{ environment_vars }}"
+  block:
+
+   - set_fact:
+       wd_backup_list_items: "{{ wd_step['artifacts'] | ibm.ibm_zos_wazi_deploy.wd_artifact_list (wd_deploy_dir_uss, wd_types, True, False, wd_no_log_flag )}}"
+       wd_backup_folder_list: "{{ wd_step['artifacts'] | ibm.ibm_zos_wazi_deploy.wd_folder_list (wd_types, True, wd_no_log_flag )}}"
+     vars:
+       wd_var_type: "{{ wd_step | json_query (\"properties[?key == 'var_type'].value\") | first | default(default_types if default_types is defined else 'types') }}"
+       wd_types: "{{ lookup('vars',  wd_var_type )}}"
+
+   - name: "[{{current_step_name}}] Create the directories if it does not exist"
+     ansible.builtin.file:
+       path: "{{ item.src }}"
+       state: directory
+       mode: "{{ item.dest_mode }}"
+     with_items: "{{ wd_backup_folder_list }}"
+
+   - name: "[{{current_step_name}}]: Copy files to backup directories"
+     include_tasks: "task_copy.yml"
+     with_items: "{{ wd_backup_list_items }}"
+     vars:
+        wd_module:
+          src: "{{ item.src }}"
+          dest: "{{ item.dest }}"
+          remote_src: True
+          mode: "{{ item.artifact_mode }}"
+          ignore_error_message: "{{ 'Source ' + item.src + ' not found'}}"
+     when:
+       - item.type.uss is defined
+
+  when: wd_payload_st is defined and wd_payload_st.stat is defined and wd_payload_st.stat.exists
+
+  tags:
+    - uss_archive

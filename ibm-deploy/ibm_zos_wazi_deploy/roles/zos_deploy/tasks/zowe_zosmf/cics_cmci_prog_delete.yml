@@ -1,0 +1,44 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+
+---
+- name: "[{{current_step_name}}]"
+  block:
+    - name: "[{{current_step_name}}]: Set action step variables"
+      set_fact:
+        task_step_result: {}
+
+    - name : "[{{current_step_name}}]: Retrieve the zowe command"
+      include_tasks: "task_zowe_cics_command.yml"
+
+    - name: "[{{current_step_name}}]: Perfom Zowe CLI CICS DELETE "
+      shell: "zowe cics delete program {{item}} {{csd_group}} {{zowe_prm}}"
+      delegate_to: localhost
+      register: cmci_delete_program_result
+      ignore_errors: true
+      with_items: "{{ wd_step['artifacts'] | map(attribute='name') | default([])}}"
+
+    - name: "[{{current_step_name}}]: Collect the cmci delete program result"
+      set_fact:
+        task_step_result: "{{ task_step_result | combine ({'cmci_delete_program_result':cmci_delete_program_result}) }}"
+
+    - name: "[{{current_step_name}}]: Register the cmci_delete program result"
+      set_fact:
+        deploy_result_tasks_steps: "{{ deploy_result_tasks_steps + [ task_step_result ] }}"
+
+    - name: "[{{current_step_name}}]: Check if cmci delete progdef succeeded"
+      fail:
+        msg: "The CMCI_DELETE program delete failed"
+      when: cmci_delete_program_result is failed
+  tags:
+    - cics-cmci-prog-delete
+
+  rescue:
+    - name : "[{{current_step_name}}]: Store the evidences"
+      include_tasks: "wd_failure.yml"

@@ -1,0 +1,64 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+    - name: "[{{current_step_name}}]: Set action step variables"
+      set_fact:
+        task_step_result: {}
+
+    - name: "[{{current_step_name}}]: Download the JCL execution logs : {{zowe_jclname}}"
+      shell: "zowe zos-jobs download output {{ exec_jcl_result.stdout }} --zosmf-profile {{ zowe_profile }} --directory {{deploy_dir_local}}"
+      delegate_to: localhost
+      register: zowe_jcl_download_result
+      ignore_errors: true
+
+    - name: "[{{current_step_name}}]: Check the download of JCL execution logs"
+      set_fact:
+        deploy_result_tasks_steps: "{{ deploy_result_tasks_steps + [ task_step_result ] }}"
+      when: zowe_jcl_download_result is failed
+
+    - name: "[{{current_step_name}}]: Find files in subdirectory"
+      find:
+         paths:  "{{deploy_dir_local}}/{{ exec_jcl_result.stdout }}"
+         recurse: yes
+         file_type: file
+      delegate_to: localhost
+      register: files_matched_subdirectory
+      ignore_errors: true
+
+    - name: "[{{current_step_name}}]: Copy for merge files"
+      copy:
+        src: "{{item.path}}"
+        dest: "{{deploy_dir_local}}/{{zowe_jobid}}"
+      with_items: "{{ files_matched_subdirectory.files}}"
+      delegate_to: localhost
+      ignore_errors: true
+
+    - name: "{{current_step_name}}]: Merge log files"
+      assemble:
+        src: "{{deploy_dir_local}}/{{zowe_jobid}}"
+        dest: "{{deploy_dir_local}}/{{zowe_jobid}}/OUTPUT.txt"
+      delegate_to: localhost
+      ignore_errors: true
+
+    - name: "[{{current_step_name}}]: Display the JCL execution log {{zowe_jobid}}"
+      command: cat "{{deploy_dir_local}}/{{zowe_jobid}}/OUTPUT.txt"
+      delegate_to: localhost
+      register: zowe_jcl_display_result
+      ignore_errors: true
+
+    - name: "[{{current_step_name}}]: Collect the display of the JCL execution log {{zowe_jobid}}"
+      set_fact:
+        task_step_result: "{{ task_step_result | combine ({'zowe_jcl_display_result': zowe_jcl_display_result.stdout_lines}) }}"
+
+    - name: "[{{current_step_name}}]: Register the display of the JCL execution log {{zowe_jobid}}"
+      set_fact:
+        deploy_result_tasks_steps: "{{ deploy_result_tasks_steps + [ task_step_result ] }}"
+

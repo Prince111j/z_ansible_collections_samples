@@ -1,0 +1,25 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  collections:
+    - ibm.ibm_zos_core
+  environment: "{{ environment_vars }}"
+  block:
+    - set_fact: 
+       wd_ignore_errors_var : "{{wd_zos_module.ignore_errors if wd_zos_module.ignore_errors is defined else False}}"
+
+    - name: "[{{current_step_name}}]: Execute the operator command {{ wd_zos_module.cmd }}"
+      zos_operator:
+        cmd: "{{ wd_zos_module.cmd | mandatory}}"
+        verbose: "{{ wd_zos_module.verbose | default(omit) }}"
+        wait_time_s: "{{ wd_zos_module.wait_time_s | default(omit) }}"
+        wait: "{{ wd_zos_module.wait | default(omit) }}"
+      register: wd_zos_module_result
+      ignore_errors: "{{wd_ignore_errors_var}}"

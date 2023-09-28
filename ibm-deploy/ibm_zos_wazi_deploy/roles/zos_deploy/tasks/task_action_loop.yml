@@ -1,0 +1,19 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+
+- block:
+
+    - include_tasks: "task_action.yml"
+      loop: "{{ lookup('vars',  wd_action_loop_var ) }}"
+      loop_control:
+        loop_var: action_loop_item
+      vars:
+        notused: "{{['single']}}"
+        wd_action_loop_var: "{{ wd_action | json_query (\"properties[?key == 'action_loop_var'].value\") | first | default('notused') }}"

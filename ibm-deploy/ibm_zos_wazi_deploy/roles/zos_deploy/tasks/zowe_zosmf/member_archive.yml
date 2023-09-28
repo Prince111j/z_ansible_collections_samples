@@ -1,0 +1,65 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+
+    - name: "[{{current_step_name}}]: Set action step variables"
+      set_fact:
+        task_step_result: {}
+
+    - name: "[{{current_step_name}}]: Collect the PDS & the member(s) to copy into destination PDS(s)"
+      set_fact:
+        archive_list_items: "{{archive_list_items | default([]) + [{'src':source_pds + '(' + item.name + ')','dest':dest_pds + '(' + item.name + ')'}]}}"
+        archive_list_pds: "{{archive_list_pds | default([]) + [{'dest':dest_pds,'pdstype':type_pds,'dstype':data_set_type,'recfm':record_format,'length':record_length,'size':size}]}}"
+      with_items: "{{ wd_step['artifacts'] | default([])}}"
+      vars:
+        current_type: "{{ item | json_query (\"properties[?key == 'type'].value\") | first | lower }}"
+        type: "{{ types| selectattr('type','==',current_type) | first}}"
+        path: "{{ item | json_query (\"properties[?key == 'path'].value\") | first }}"
+        source_pds: "{{ type.pds.name }}"
+        dest_pds: "{{ type.pds.backup }}"
+        type_pds: "{{ type.type | upper}}"
+        data_set_type: "{{ type.pds.spec.type }}"
+        record_format: "{{ type.pds.spec.record_format }}"
+        record_length : "{{ type.pds.spec.record_length }}"
+        size: "{{ type.pds.spec.space_primary }}{{ type.pds.spec.space_type }}"
+
+    - name: "{{current_step_name}}] : Create backup PDS(s)"
+      include_tasks: "task_zowe_create_pds.yml"
+      with_items: "{{archive_list_pds}}"
+
+    - name: "[{{current_step_name}}]: Copy the member(s) to backup PDS(s)"
+      shell: |
+         zowe zos-files copy data-set "{{item.src}}" "{{item.dest}}" --replace\
+           --zosmf-profile {{zowe_profile}}
+      with_items: "{{archive_list_items}}"
+      delegate_to: localhost
+      register: archive_result
+      ignore_errors: true
+
+    - name: "[{{current_step_name}}]: Collect the archive result"
+      set_fact:
+        task_step_result: "{{ task_step_result | combine ({'archive_result':archive_result}) }}"
+
+    - name: "[{{current_step_name}}]: Register the archive result"
+      set_fact:
+        deploy_result_tasks_steps: "{{ deploy_result_tasks_steps + [ task_step_result ] }}"
+
+    - name: "[{{current_step_name}}]: Check if archive succeeded"
+      fail:
+        msg: "The archive failed"
+      when: archive_result is failed
+
+  tags:
+    - copy-to-backup-pds
+
+  rescue:
+    - name : "[{{current_step_name}}]: Store the evidences"
+      include_tasks: "wd_failure.yml"     

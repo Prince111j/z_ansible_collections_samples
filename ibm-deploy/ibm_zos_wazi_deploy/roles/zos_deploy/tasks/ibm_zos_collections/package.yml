@@ -1,0 +1,61 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022, 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "Process package"
+  environment: "{{ environment_vars }}"
+
+  block:
+
+    - name: "[{{current_step_name}}]: Set the package location"
+      set_fact:
+        wd_package_file: "{{ wd_deployment_plan.metadata.annotations.package.path if wd_deployment_plan.metadata.annotations.package is defined else None }}"
+      when: wd_package_file is not defined
+
+    - name: "[{{current_step_name}}]: Check if {{ wd_package_file }} exists"
+      stat:
+        path: "{{ wd_package_file }}"
+        checksum_algorithm: sha256
+      delegate_to: localhost
+      register: wd_payload_st
+
+    - name: "[{{current_step_name}}]: Verify the deployment plan package section {{ wd_package_file }}"
+      fail:
+        msg: "The deployment plan package section is not resent in the deployment plan!!"
+      delegate_to: localhost
+      failed_when: wd_deployment_plan.metadata.annotations.package is not defined or wd_deployment_plan.metadata.annotations.package.sha256 is not defined
+      when: wd_payload_st.stat.exists
+
+    - name: "[{{current_step_name}}]: Verify the checksum of the package {{ wd_package_file }}"
+      fail:
+        msg: "The current package checksum {{ wd_payload_st.stat.checksum }} differ from the checksum in the deployment plan {{ wd_deployment_plan.metadata.annotations.package.sha256 }}"
+      delegate_to: localhost
+      failed_when: wd_deployment_plan.metadata.annotations.package.sha256 != wd_payload_st.stat.checksum
+      when: wd_payload_st.stat.exists
+
+    - name: "[{{current_step_name}}]: Send {{ wd_package_file }} to USS: {{ wd_env.uss_dir }}"
+      copy:
+        src: "{{ wd_package_file }}"
+        dest: "{{ wd_deploy_dir_uss }}"
+      when: wd_payload_st.stat.exists
+
+    - name: "[{{current_step_name}}]: Extract {{ wd_package_file }}"
+      shell: |
+         set +e
+         tar -C {{ wd_deploy_dir_uss }} -xf {{ wd_deploy_dir_uss }}/*.tar -L T 2>{{ wd_deploy_dir_uss }}/{{inventory_hostname}}.tar.log
+         if [ $(grep -v "cannot set uid.gid" {{ wd_deploy_dir_uss }}/{{inventory_hostname}}.tar.log | wc -w) -eq 0 ]
+         then
+            exit 0
+          else
+            cat {{ wd_deploy_dir_uss }}/{{inventory_hostname}}.tar.log | iconv -f ibm-1047 -t utf-8
+            exit -1
+          fi
+      when: wd_payload_st.stat.exists
+
+  tags:
+    - package

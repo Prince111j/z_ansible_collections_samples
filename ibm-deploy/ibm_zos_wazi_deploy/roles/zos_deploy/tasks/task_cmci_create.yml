@@ -1,0 +1,36 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  collections:
+    - ibm.ibm_zos_cics
+  environment: "{{ environment_vars }}"
+  block:
+    - set_fact: 
+       wd_ignore_errors_var : "{{wd_zos_module.ignore_errors if wd_zos_module.ignore_errors is defined else False}}"
+
+    - name: "[{{current_step_name}}]: Create CICS definition for {{wd_zos_module.attributes}}"
+      delegate_to: localhost
+      cmci_create:
+        attributes: '{{wd_zos_module.attributes | default(omit)}}'
+        cmci_cert: '{{wd_zos_module.cmci_cert | default(omit)}}'
+        cmci_host: '{{wd_zos_module.cmci_host | mandatory}}'
+        cmci_key: '{{wd_zos_module.cmci_key | default(omit) }}'
+        cmci_password: '{{wd_zos_module.cmci_password | default(omit)}}'
+        cmci_port: '{{wd_zos_module.cmci_port | int | mandatory}}'
+        cmci_user: '{{wd_zos_module.cmci_user | default(omit)}}'
+        context: '{{wd_zos_module.context | mandatory}}'
+        create_parameters: '{{wd_zos_module.create_parameters | default(omit)}}'
+        insecure: '{{wd_zos_module.insecure | default(omit)}}'
+        scheme: '{{wd_zos_module.scheme | default (omit)}}'
+        scope: '{{wd_zos_module.scope | default(omit)}}'
+        type: '{{wd_zos_module.type | mandatory}}'
+      register: wd_zos_module_result
+      ignore_errors: "{{wd_ignore_errors_var}}"
+      

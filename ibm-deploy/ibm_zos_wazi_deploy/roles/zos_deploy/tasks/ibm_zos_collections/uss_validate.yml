@@ -1,0 +1,64 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  environment: "{{ environment_vars }}"
+  block:
+    - set_fact:
+       wd_timestamp: "{{ lookup('pipe','date +%s') }}"
+       wd_validate_list_items: "{{ wd_step['artifacts'] | ibm.ibm_zos_wazi_deploy.wd_artifact_list (wd_deploy_dir_uss, wd_types, False, False, wd_no_log_flag )}}"
+      vars:
+        wd_var_type: "{{ wd_step | json_query (\"properties[?key == 'var_type'].value\") | first | default(default_types if default_types is defined else 'types') }}"
+        wd_types: "{{ lookup('vars',  wd_var_type )}}"
+
+    - name: "{{current_step_name}}]: Create {{wd_deploy_dir_local}}/validate.{{wd_timestamp}}.sh global shell script"
+      template:
+        src: validate-sh.j2
+        dest: "{{wd_deploy_dir_local}}/validate.{{wd_timestamp}}.sh"
+        mode: 0755
+      delegate_to: localhost
+      vars:
+        wd_items: "{{ wd_validate_list_items | default([]) }}"
+        wd_ignore_missing: true
+      register: create_shell_result
+      changed_when: true
+
+    - name: "{{current_step_name}}]: Copy {{wd_deploy_dir_local}}/validate.{{wd_timestamp}}.sh to {{wd_deploy_dir_uss}}/validate.{{wd_timestamp}}.sh"
+      include_tasks: "task_zos_copy.yml"
+      vars:
+        wd_zos_module:
+          src: "{{wd_deploy_dir_local}}/validate.{{wd_timestamp}}.sh"
+          dest: "{{wd_deploy_dir_uss}}/validate.{{wd_timestamp}}.sh"
+          remote_src: false
+          is_binary: false
+          encoding:
+            from: UTF-8
+            to: IBM-1047
+
+    - name: "[{{current_step_name}}]: Validate files in directories with global shell script {{wd_deploy_dir_uss}}/validate.{{wd_timestamp}}.sh"
+      shell: |
+        #!/bin/sh
+        set +e
+        sh {{wd_deploy_dir_uss}}/validate.{{wd_timestamp}}.sh > {{wd_deploy_dir_uss}}/validate.{{wd_timestamp}}.log 2>&1
+        rc=$?
+        if [ $rc -ne 0 ]
+        then
+          cat {{wd_deploy_dir_uss}}/validate.{{wd_timestamp}}.log
+          exit $rc
+        fi
+        exit 0
+      ignore_errors: true
+      register: validate_shell_result
+
+    - debug:
+        msg: "{{validate_shell_result.stdout_lines}}"
+      failed_when: validate_shell_result is failed
+
+  tags:
+    - uss_validate

@@ -1,0 +1,59 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: ""
+  environment: "{{ environment_vars }}"
+  collections:
+    - ibm.ibm_zos_core  
+  block:
+  
+    - name: "Copy binary file to {{wd_deploy_dir_uss}}"
+      copy:
+        src: "smf-record"
+        dest: "{{wd_deploy_dir_uss}}/smf-record"
+        mode: 0755
+
+    - name: "Copy script files to {{wd_deploy_dir_uss}}"
+      zos_copy:
+          src: "{{role_path}}/files/smf-record.sh"
+          dest: "{{wd_deploy_dir_uss}}/smf-record.sh"
+          remote_src: false
+          is_binary: false
+          force: True
+          mode: '0755'
+          encoding:
+            from: utf8
+            to: IBM-1047
+
+    - name: "Register SMF Record"
+      shell: |
+        #!/bin/sh
+        set +e
+        extattr +a {{wd_deploy_dir_uss}}/smf-record
+        sh {{wd_deploy_dir_uss}}/smf-record.sh
+        rc=$?
+        if [ $rc -ne 0 ]
+        then
+          exit $rc
+        fi
+        exit 0
+      ignore_errors: true
+      #no_log: yes
+      register: smf_record_shell_result
+
+    - debug:
+        msg: 
+        - "stdout_lines:"
+        - "{{smf_record_shell_result.stdout_lines}}"
+        - "stderr_lines:"
+        - "{{smf_record_shell_result.stderr_lines}}"
+      when: smf_record_shell_result is failed
+
+  tags:
+    - always

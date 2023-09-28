@@ -1,0 +1,40 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022, 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  collections:
+    - ibm.ibm_zos_core
+  environment: "{{ environment_vars }}"
+  block:
+    - set_fact: 
+       wd_ignore_errors_var : "{{wd_zos_module.ignore_errors if wd_zos_module.ignore_errors is defined else False}}"
+ 
+    - name: "[{{current_step_name}}]: Manage data set {{wd_zos_module.name}}"
+      zos_data_set:
+        batch: "{{ wd_zos_module.batch | default(omit) }}"
+        block_size: "{{ wd_zos_module.block_size | default(omit) }}"
+        directory_blocks: "{{ wd_zos_module.directory_blocks | default(omit) }}"
+        force: "{{ wd_zos_module.force | default(omit) }}"
+        key_length: "{{ wd_zos_module.key_length | default(omit) }}"
+        key_offset: "{{ wd_zos_module.key_offset | default(omit) }}"
+        name: "{{ wd_zos_module.name | default(omit) }}"
+        record_format: "{{ wd_zos_module.record_format | default(omit) }}"
+        record_length: "{{ wd_zos_module.record_length | default(omit) }}"
+        replace: "{{ wd_zos_module.replace | default(omit) }}"
+        sms_data_class: "{{ wd_zos_module.sms_data_class | default(omit) }}"
+        sms_management_class: "{{ wd_zos_module.sms_management_class | default(omit) }}"
+        sms_storage_class: "{{ wd_zos_module.sms_storage_class | default(omit) }}"
+        space_primary: "{{ wd_zos_module.space_primary | default(omit) }}"
+        space_secondary: "{{ wd_zos_module.space_secondary | default(omit) }}"
+        space_type: "{{ wd_zos_module.space_type | default(omit) }}"
+        state: "{{ wd_zos_module.state | default(omit) }}"
+        type: "{{ wd_zos_module.type | default(omit) }}"
+        volumes: "{{ wd_zos_module.volumes | default(omit) }}"
+      register: wd_zos_module_result
+      ignore_errors: "{{wd_ignore_errors_var}}"

@@ -1,0 +1,66 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022, 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+
+---
+- name: "[{{current_step_name}}]"
+  block:
+    - set_fact:
+       wd_cics_cmci_prog_create_list_items: "{{ wd_step['artifacts'] | ibm.ibm_zos_wazi_deploy.wd_cics_artifact_list (wd_types, wd_no_log_flag )}}"
+      vars:
+        wd_var_type: "{{ wd_step | json_query (\"properties[?key == 'var_type'].value\") | first | default(default_types if default_types is defined else 'types') }}"
+        wd_types: "{{ lookup('vars',  wd_var_type )}}"
+
+    - name: "[{{current_step_name}}]: Define new PROGRAM(s) in CICS"
+      include_tasks: "task_cmci_create.yml"
+      loop: "{{ wd_cics_cmci_prog_create_list_items | default([]) }}"
+      vars:
+        wd_zos_module:
+          insecure: '{{item.cics_system.insecure}}'
+          cmci_user: '{{item.cics_system.cmci_user}}'
+          cmci_password: '{{item.cics_system.cmci_password}}'
+          cmci_key: '{{item.cics_system.cmci_key | default(omit)}}'
+          cmci_cert: '{{item.cics_system.cmci_cert | default(omit)}}'
+          cmci_host: '{{item.cics_system.cmci_host}}'
+          cmci_port: '{{item.cics_system.cmci_port}}'
+          context: '{{item.cics_system.context}}'
+          scope: '{{item.cics_system.scope | default(omit)}}'
+          scheme: '{{item.cics_system.scheme}}'
+          type: 'CICSDefinitionProgram'
+          attributes:
+            name: '{{ item.name }}'
+            csdgroup: '{{ item.cics_system.csd_group }}'
+          create_parameters:
+            - name: 'CSD'
+
+    - name: "[{{current_step_name}}]: Install new PROGRAM(s) in CICS"
+      include_tasks: "task_cmci_action.yml"
+      loop: "{{ wd_cics_cmci_prog_create_list_items | default([]) }}"
+      vars:
+        wd_zos_module:
+          insecure: '{{item.cics_system.insecure}}'
+          cmci_user: '{{item.cics_system.cmci_user}}'
+          cmci_password: '{{item.cics_system.cmci_password}}'
+          cmci_key: '{{item.cics_system.cmci_key | default(omit)}}'
+          cmci_cert: '{{item.cics_system.cmci_cert | default(omit)}}'
+          cmci_host: '{{item.cics_system.cmci_host}}'
+          cmci_port: '{{item.cics_system.cmci_port}}'
+          context: '{{item.cics_system.context}}'
+          scope: '{{item.cics_system.scope | default(omit)}}'
+          scheme: '{{item.cics_system.scheme}}'
+          action_name: 'CSDINSTALL'
+          type: 'CICSDefinitionProgram'
+          resources:
+            filter:
+              NAME: '{{ item.name }}'
+            get_parameters:
+              - name: 'CSDGROUP'
+                value: '{{ item.cics_system.csd_group }}'
+
+  tags:
+    - cics_cmci_prog_create

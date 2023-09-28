@@ -1,0 +1,29 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  environment: "{{ environment_vars }}"
+  block:
+    - name: "Create deployer base directory on USS: {{ wd_env.uss_dir }}"
+      file:
+        state: directory
+        mode: 0777
+        path: "{{ wd_env.uss_dir }}"
+
+    - name: "Create temporary directory on USS in: {{ wd_env.uss_dir }}"
+      tempfile:
+        path: "{{ wd_env.uss_dir }}"
+        state: directory
+      register: wd_deploy_dir_uss_result
+
+    - name: "Register USS temporary directory path: {{ wd_deploy_dir_uss_result.path }}"
+      set_fact:
+        wd_deploy_dir_uss: "{{ wd_deploy_dir_uss_result.path }}"
+
+ 

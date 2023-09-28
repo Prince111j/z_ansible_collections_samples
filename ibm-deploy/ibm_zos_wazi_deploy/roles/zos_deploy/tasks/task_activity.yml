@@ -1,0 +1,36 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022, 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{wd_activity.short_name | lower if wd_activity.short_name is defined else wd_activity.name | lower}}]:\
+             Process activity '{{ wd_activity.name }}'"
+
+  block:
+
+    - name: "[{{wd_activity.short_name | lower if wd_activity.short_name is defined else wd_activity.name | lower}}]\
+              : Process actions for activity '{{ wd_activity.name }}'"
+      include_tasks: "task_action_loop.yml"
+      loop: "{{ wd_activity.actions | default([])}}"
+      loop_control:
+        loop_var: wd_action
+      vars:
+         run_var_name: "{{ 'run_' + wd_activity.short_name if wd_activity.short_name is defined else '' }}"
+         run_var_name_value: "{{ lookup('vars', run_var_name, default='') }}"
+         run_when: "{{ run_var_name_value if run_var_name_value != '' else  wd_activity |\
+                         ibm.ibm_zos_wazi_deploy.tag_filter (\
+                            wd_activity.tags if wd_activity.tags is defined else None,\
+                            None,\
+                            None,\
+                            planTags if planTags is defined else wd_deployment_plan.default_tags | join(',') if wd_deployment_plan.default_tags is defined else None ,\
+                            planSkipTags if planSkipTags is defined else wd_deployment_plan.default_skip_tags | join(',') if wd_deployment_plan.default_skip_tags is defined else None ,\
+                            1,
+                            wd_no_log_flag
+                         ) }}"
+      when: run_when == True
+      tags:
+        - always

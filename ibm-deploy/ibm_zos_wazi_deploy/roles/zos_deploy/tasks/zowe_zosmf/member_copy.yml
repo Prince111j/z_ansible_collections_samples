@@ -1,0 +1,76 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+
+    - name: "[{{current_step_name}}]: Set action step variables"
+      set_fact:
+        task_step_result: {}
+
+    - name: "[{{current_step_name}}]: Collect the PDS & the member(s) to copy into destination PDS(s)"
+      set_fact:
+#        copy_list_items: "{{copy_list_items | default([]) + [{'src':deploy_dir_uss + '/' + path,'dest':dest_pds + '(' + item.name + ')', 'type': type_pds, 'name': item.name}]}}"
+        copy_list_items: "{{copy_list_items | default([]) + [{'src':deploy_dir_uss + '/' + path,'dest':dest_pds + '(' + item.name + ')', 'is_binary': is_binary,'is_load': is_load}]}}"
+        copy_list_pds: "{{copy_list_pds | default([]) + [{'dest':dest_pds,'pdstype':type_pds,'dstype':data_set_type,'recfm':record_format,'length':record_length,'size':size}]}}"
+      with_items: "{{ wd_step['artifacts'] | default([])}}"
+      vars:
+        current_type: "{{ item | json_query (\"properties[?key == 'type'].value\") | first | lower }}"
+        type: "{{ types| selectattr('type','==',current_type) | first}}"
+        path: "{{ item | json_query (\"properties[?key == 'path'].value\") | first }}"
+        dest_pds: "{{ type.pds.name }}"
+        is_binary: "{{type.is_binary if type.is_binary is defined else False}}"
+        is_load: "{{type.is_load if type.is_load is defined else False}}"
+        type_pds: "{{ type.type | upper}}"
+        data_set_type: "{{ type.pds.spec.type }}"
+        record_format: "{{ type.pds.spec.record_format }}"
+        record_length : "{{ type.pds.spec.record_length }}"
+        size: "{{ type.pds.spec.space_primary }}{{ type.pds.spec.space_type }}"
+
+    - name: "{{current_step_name}}] : Create destination PDS(s)"
+      include_tasks: "task_zowe_create_pds.yml"
+      with_items: "{{ copy_list_pds| default([])}}"
+
+    - name: "{{current_step_name}}] :  Create {{deploy_dir_local}}/cp.sh file"
+      template:
+        src: cp-sh.j2
+        dest: "{{deploy_dir_local}}/cp.sh"
+        mode: 0644
+      vars:
+        items: "{{ copy_list_items| default([])}}"
+      delegate_to: localhost
+
+    - name : "[{{current_step_name}}]: Copy members to PDS"
+      include_tasks: "task_jcl_run_sh.yml"
+      vars:
+        - sh_file: cp.sh
+        - jcl_file: execshell.jcl
+      register: copy_to_pds_result
+      ignore_errors: true
+
+
+    - name: "[{{current_step_name}}]: Collect the copy to PDS result"
+      set_fact:
+        task_step_result: "{{ task_step_result | combine ({'copy_to_pds_result':copy_to_pds_result}) }}"
+
+    - name: "[{{current_step_name}}]: Register the copy to PDS result"
+      set_fact:
+        deploy_result_tasks_steps: "{{ deploy_result_tasks_steps + [ task_step_result ] }}"
+
+    - name: "[{{current_step_name}}]: Check if copy to PDS succeeded"
+      fail:
+        msg: "The create datasets failed"
+      when: copy_to_pds_result is failed
+
+  tags:
+   - copy-to-pds
+
+  rescue:
+    - name : "[{{current_step_name}}]: Store the evidences"
+      include_tasks: "wd_failure.yml"

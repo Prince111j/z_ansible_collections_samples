@@ -1,0 +1,68 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+    - name: "[{{current_step_name}}]: Set action step variables"
+      set_fact:
+        task_step_result: {}
+
+    - name: "[{{current_step_name}}]: Create BIND plan JCL {{deploy_dir_local}}/{{inventory_hostname}}.bindplan.jcl"
+      template:
+        src: bind-plan.jcl.j2
+        dest: "{{deploy_dir_local}}/{{inventory_hostname}}.bindplan.jcl"
+      ignore_errors: true
+      delegate_to: localhost
+
+    - name: "[{{current_step_name}}]: Run BIND plan JCL : {{deploy_dir_local}}/{{inventory_hostname}}.bindplan.jcl"
+      shell: "zowe zos-jobs submit local-file {{deploy_dir_local}}/{{inventory_hostname}}.bindplan.jcl  --zosmf-profile {{ zowe_profile }}  --rff jobid --rft string"
+      delegate_to: localhost
+      register: exec_jcl_result
+      ignore_errors: true
+
+    - name: "[{{current_step_name}}]: Collect the BIND plan JCL execution result"
+      set_fact:
+        zowe_jobid: "{{exec_jcl_result.stdout}}"
+        zowe_jclname: "{{deploy_dir_local}}/{{inventory_hostname}}.bindplan.jcl"
+        task_step_result: "{{ task_step_result | combine ({'exec_jcl_result': exec_jcl_result}) }}"
+
+    - name: "[{{current_step_name}}]: Check the BIND plan JCL execution result"
+      set_fact:
+        deploy_result_tasks_steps: "{{ deploy_result_tasks_steps + [ task_step_result ] }}"
+      when: exec_jcl_result is failed
+
+    - name: "[{{current_step_name}}]: Retrieve the BIND plan JCL execution status"
+      shell: "zowe zos-jobs view job-status-by-jobid {{zowe_jobid}}  --zosmf-profile {{ zowe_profile }}  --rff retcode --rft string"
+      delegate_to: localhost
+      register: zowe_jcl_retcode
+      ignore_errors: true
+
+    - name: "[{{current_step_name}}]: Collect the BIND plan JCL execution return code"
+      set_fact:
+        zowe_retcode: "{{zowe_jcl_retcode.stdout}}"
+        task_step_result: "{{ task_step_result | combine ({'zowe_jcl_retcode': zowe_jcl_retcode.stdout}) }}"
+
+    - name: "[{{current_step_name}}]: Register BIND plan JCL execution return code"
+      set_fact:
+        deploy_result_tasks_steps: "{{ deploy_result_tasks_steps + [ task_step_result ] }}"
+
+    - name : "[{{current_step_name}}]: Retrieve the JCL execution logs"
+      include_tasks: "task_output_jcl.yml"
+
+    - name: "[{{current_step_name}}]: Check if BIND plan succeeded"
+      fail:
+        msg: "The BIND plan failed"
+      when: exec_jcl_result is failed  or zowe_retcode | regex_replace('CC ') | int > db2_bind_plan_job_max_rc | int or zowe_retcode == "JCL ERROR"
+
+  tags:
+    - db2-bind-plan
+
+  rescue:
+    - name : "[{{current_step_name}}]: Store the evidences"
+      include_tasks: "wd_failure.yml"    

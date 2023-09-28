@@ -1,0 +1,28 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  environment: "{{ environment_vars }}"
+  block:
+    - set_fact: 
+       wd_ignore_errors_var : "{{wd_module.ignore_errors if wd_module.ignore_errors is defined else False}}"
+         
+    - name: "[{{current_step_name}}]: Copy {{wd_module.src}} to {{wd_module.dest}}"
+      copy:
+        src: "{{ wd_module.src | mandatory }}"
+        dest: "{{ wd_module.dest | mandatory }}"
+        owner: "{{ wd_module.owner | default(omit) }}"
+        group: "{{ wd_module.group | default(omit) }}"
+        mode: "{{ wd_module.mode | default(omit) }}"
+        remote_src: "{{ wd_module.remote_src | default(omit) }}"
+      register: wd_module_result
+      ignore_errors: "{{wd_ignore_errors_var}}"  
+      failed_when:
+        - wd_module_result.failed == true
+        - wd_module.ignore_error_message is not defined or wd_module.ignore_error_message != wd_module_result.msg       

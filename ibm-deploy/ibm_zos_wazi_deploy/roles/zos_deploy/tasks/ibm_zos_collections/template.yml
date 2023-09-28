@@ -1,0 +1,31 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+
+    - name: "[{{current_step_name}}]: Retrieve parameters"
+      set_fact:
+        wd_template_name: "{{ lookup('vars',  wd_var_template_name)}}"
+      vars:
+        wd_var_template_name: "{{ wd_step | json_query (\"properties[?key == 'var_template_name'].value\") | first | default('template_name_default') }}"
+
+    - name: "[{{current_step_name}}]: Create template on localhost"
+      template:
+        src:  "{{wd_template_name.src}}"
+        dest: "{{wd_template_name.dest}}"
+        owner: "{{wd_template_name.owner if wd_template.owner is defined else omit}}"
+        group: "{{wd_template_name.group if wd_template.group is defined else omit}}"
+        mode: "{{wd_template_name.mode if wd_template.mode is defined else omit}}"
+      delegate_to: localhost
+      register: wd_template_result
+
+  tags:
+    - template
+  

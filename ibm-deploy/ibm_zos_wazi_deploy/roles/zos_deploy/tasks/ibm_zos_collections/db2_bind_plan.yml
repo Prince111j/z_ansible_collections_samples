@@ -1,0 +1,44 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022, 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+
+    - set_fact:
+       wd_db2_bind_package_list_items: "{{ wd_step['artifacts'] | ibm.ibm_zos_wazi_deploy.wd_db2_artifact_list (wd_types, wd_no_log_flag )}}"
+      vars:
+        wd_var_type: "{{ wd_step | json_query (\"properties[?key == 'var_type'].value\") | first | default(default_types if default_types is defined else 'types') }}"
+        wd_types: "{{ lookup('vars',  wd_var_type )}}"
+
+    - name: "[{{current_step_name}}]: Create BIND PLAN JCL(s) for DB2 Systems"
+      template:
+        src: bind-plan.jcl.j2
+        dest: "{{wd_deploy_dir_local}}/{{inventory_hostname}}.bindplan.{{wd_index}}.jcl"
+      loop: "{{ wd_db2_bind_package_list_items | default([]) }}"
+      loop_control:
+        index_var: wd_index
+      delegate_to: localhost
+
+    - name: "[{{current_step_name}}]: Run BIND PLAN JCL(s) for DB2 Systems"
+      include_tasks: "task_zos_job_submit.yml"
+      loop: "{{ wd_db2_bind_package_list_items | default([]) }}"
+      loop_control:
+        index_var: wd_index
+      vars:
+        wd_zos_module:
+          src: "{{wd_deploy_dir_local}}/{{inventory_hostname}}.bindplan.{{wd_index}}.jcl"
+          location: LOCAL
+          wait: true
+          max_rc: "{{ item.db2_system.plan_job_max_rc }}"
+          encoding:
+            from: UTF-8
+            to: IBM-1047
+  tags:
+    - db2_bind_plan
+  

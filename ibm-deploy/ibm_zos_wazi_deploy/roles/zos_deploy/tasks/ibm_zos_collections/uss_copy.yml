@@ -1,0 +1,61 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  environment: "{{ environment_vars }}"
+  block:
+
+   - set_fact:
+       wd_copy_list_items: "{{ wd_step['artifacts'] | ibm.ibm_zos_wazi_deploy.wd_artifact_list (wd_deploy_dir_uss, wd_types, False, False, wd_no_log_flag )}}"
+       wd_folder_list: "{{ wd_step['artifacts'] | ibm.ibm_zos_wazi_deploy.wd_folder_list (wd_types, False, wd_no_log_flag )}}"
+     vars:
+       wd_var_type: "{{ wd_step | json_query (\"properties[?key == 'var_type'].value\") | first | default(default_types if default_types is defined else 'types') }}"
+       wd_types: "{{ lookup('vars',  wd_var_type )}}"
+
+   - name: "[{{current_step_name}}] Create the directories if it does not exist"
+     ansible.builtin.file:
+       path: "{{ item.src }}"
+       state: directory
+       mode: "{{ item.dest_mode }}"
+     with_items: "{{ wd_folder_list }}"
+
+   - name: "[{{current_step_name}}]: Copy files to destination directories"
+     include_tasks: "task_copy.yml"
+     with_items: "{{ wd_copy_list_items }}"
+     vars:
+        wd_module:
+          src: "{{ item.src }}"
+          dest: "{{ item.dest }}"
+          remote_src: True
+          mode: "{{ item.artifact_mode }}"
+     when:
+       - item.type.uss is defined
+       - item.type.encoding is not defined
+
+   - name: "[{{current_step_name}}]: Copy text files with encoding to destination directories"
+     include_tasks: "task_zos_copy.yml"
+     with_items: "{{ wd_copy_list_items| default([]) }}"
+     vars:
+        wd_zos_module:
+          src: "{{ item.src }}"
+          dest: "{{ item.dest }}"
+          remote_src: true
+          is_binary: "{{ item.is_binary }}"
+          encoding: "{{ item.encoding | default(omit) }}"
+          backup: false
+          force: true
+          mode: "{{ item.artifact_mode }}"
+     when:
+        - item.type.uss is defined
+        - item.type.encoding is defined
+
+  when: wd_payload_st is defined and wd_payload_st.stat is defined and wd_payload_st.stat.exists
+
+  tags:
+    - uss_copy

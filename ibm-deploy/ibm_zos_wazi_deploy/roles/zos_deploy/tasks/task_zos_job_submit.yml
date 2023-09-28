@@ -1,0 +1,35 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  collections:
+    - ibm.ibm_zos_core
+  environment: "{{ environment_vars }}"
+  block:
+    - set_fact: 
+       wd_ignore_errors_var : "{{wd_zos_module.ignore_errors if wd_zos_module.ignore_errors is defined else False}}"
+
+    - name: "[{{current_step_name}}]: Submit JCL {{ wd_zos_module.src }}"
+      zos_job_submit:
+        encoding:
+          from: "{{ wd_zos_module.encoding.from | default(omit) }}"
+          to: "{{ wd_zos_module.encoding.to | default(omit) }}"
+        location: "{{ wd_zos_module.location | default(omit) }}"
+        max_rc: 9999999
+        return_output: "{{ wd_zos_module.return_output | default(omit) }}"
+        src: "{{ wd_zos_module.src | mandatory }}"
+        volume: "{{ wd_zos_module.volume | default(omit) }}"
+        wait: "{{ wd_zos_module.wait | default(omit) }}"
+        wait_time_s: "{{ wd_zos_module.wait_time_s | default(omit) }}"
+      register: wd_zos_module_result
+      ignore_errors: "{{wd_ignore_errors_var}}"
+      failed_when: >
+        ( wd_zos_module_result.failed == true) or  
+        ( wd_zos_module_result.jobs[0].ret_code.msg is defined and (("JCL ERROR" in wd_zos_module_result.jobs[0].ret_code.msg) or ("ABEND" in wd_zos_module_result.jobs[0].ret_code.msg))) or
+        ( wd_zos_module_result.jobs[0].ret_code.code is defined and ((wd_zos_module.max_rc is defined and wd_zos_module_result.jobs[0].ret_code.code > wd_zos_module.max_rc | int) or (wd_zos_module.max_rc is not defined and wd_zos_module_result.jobs[0].ret_code.code > 0)))

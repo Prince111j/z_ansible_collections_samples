@@ -1,0 +1,41 @@
+{
+ "collection_info": {
+  "namespace": "ibm",
+  "name": "ibm_zos_wazi_deploy",
+  "version": "3.0.0",
+  "authors": [
+   "Veronique Corfmat <corfmat.v@fr.ibm.com>",
+   "Veronique Lode <lode.veronique@fr.ibm.com>",
+   "Olivier Le Louer <le_louer.o@fr.ibm.com>",
+   "Jean-Yves Baudy <baudy.jy@fr.ibm.com>"
+  ],
+  "readme": "README.md",
+  "tags": [
+   "ibm",
+   "z",
+   "zos",
+   "z_os",
+   "deploy",
+   "zos_deploy",
+   "ibm_zos_wazi_deploy"
+  ],
+  "description": "The IBM z/OS deploy collection includes a role to automate deployment tasks on z/OS.",
+  "license": [
+   "IBM"
+  ],
+  "license_file": "LICENSE.txt",
+  "dependencies": {},
+  "repository": null,
+  "documentation": "http://ibm.com",
+  "homepage": "http://ibm.com",
+  "issues": "http://ibm.com"
+ },
+ "file_manifest_file": {
+  "name": "FILES.json",
+  "ftype": "file",
+  "chksum_type": "sha256",
+  "chksum_sha256": "0a43a95c999846912cbf045d7f97ceb98edaa03454fbbcfd01280231f9bde70a",
+  "format": 1
+ },
+ "format": 1
+}

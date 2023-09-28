@@ -1,0 +1,59 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+
+# ZOWE CICS- Command line
+---
+- name: "[{{current_step_name}}]"
+  environment: "{{ environment_vars }}"
+  block:
+    - name: "[{{current_step_name}}]: Set action step variables"
+      set_fact:
+        task_step_result: {}
+        zowe_prm: ""
+
+    - name: "[{{current_step_name}}]: Set region name if scope defined"
+      set_fact:
+        context: "--region-name {{cics_scope}}"
+      when: cics_scope | length > 0
+
+    - name: "[{{current_step_name}}]: Set region name if context defined and scope undefined"
+      set_fact:
+        context: "--region-name {{cics_context}}"
+      when: cics_scope | length == 0
+
+    - name: "[{{current_step_name}}]: Set region name and cics-plex if scope and context defined "
+      set_fact:
+        context: "--region-name {{cics_scope}} --cics-plex {{cics_context}}"
+      when: cics_context | length > 0 and cics_scope | length > 0 and cics_context !=  cics_scope
+
+
+    - name: "[{{current_step_name}}]: Set Zowe command line parameters "
+      set_fact:
+        zowe_prm: "{{zowe_prm + item.name + item.value}} "
+      when: item.value | length > 0 and item.value != " "
+      ignore_errors: true
+      loop:
+        - name: ""
+          value: "{{context}}"
+        - name: "--host "
+          value: "{{cics_cmci_host}}"
+        - name: "--port "
+          value: "{{cics_cmci_port | int }}"
+        - name : "--user "
+          value: "{{cics_cmci_user}}"
+        - name: "--password "
+          value: "{{cics_cmci_password}}"
+        - name: "--cert-key-file "
+          value: "{{cics_cmci_key | default(omit) }} "
+        - name: "--cert-file "
+          value: "{{cics_cmci_cert | default(omit) }}"
+        - name: "--protocol "
+          value: "{{cics_scheme}}"
+        - name: "--reject-unauthorized "
+          value: "true"

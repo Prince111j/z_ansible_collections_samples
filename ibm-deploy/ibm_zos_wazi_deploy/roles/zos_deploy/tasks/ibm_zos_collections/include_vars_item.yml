@@ -1,0 +1,32 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+    - set_fact:
+       wd_ignore_errors_var : "{{wd_zos_module.ignore_errors if wd_zos_module.ignore_errors is defined else False}}"
+
+    - name: "[{{current_step_name}}]: Verify existence of {{ item }}"
+      stat:
+       path: "{{item}}"
+      delegate_to: localhost
+      register: stat_result
+
+    - name: "[{{current_step_name}}]: Check result existence of {{ item }}"
+      fail:
+       msg: "Could not find or access {{item}}"
+      when:
+        - stat_result.stat.exists == False
+        - wd_file_must_exist_include is defined and wd_file_must_exist_include == True
+
+    - name: "[{{current_step_name}}]: Load variables from {{ item }}"
+      include_vars:
+       file: "{{item}}"
+      ignore_errors: "{{wd_ignore_errors_var}}"
+      when : stat_result.stat.exists == True

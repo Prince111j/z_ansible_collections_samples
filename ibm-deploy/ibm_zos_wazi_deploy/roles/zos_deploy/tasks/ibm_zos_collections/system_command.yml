@@ -1,0 +1,34 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022, 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+    - name: "[{{current_step_name}}]: Retrieve parameters"
+      set_fact:
+        wd_system_command: "{{ lookup('vars',  wd_var_system_command)}}"
+      vars:
+        wd_var_system_command: "{{ wd_step | json_query (\"properties[?key == 'var_system_command'].value\") | first | default('system_command_default') }}"
+
+    - name: "[{{current_step_name}}]: Run System Command"
+      include_tasks: "task_zos_operator.yml"
+      vars:
+        wd_zos_module:
+          cmd: "{{ wd_system_command.cmd if wd_system_command.cmd is defined else omit}}"
+          verbose: "{{ wd_system_command.verbose if wd_system_command.verbose is defined else omit}}"
+          wait_time_s: "{{ wd_system_command.wait_time_s if wd_system_command.wait_time_s is defined else omit}}"
+          wait: "{{ wd_system_command.wait if wd_system_command.wait is defined else omit}}"
+      register: wd_system_command_result 
+
+    - name: "[{{current_step_name}}]: Validate System Command result"
+      fail:
+        msg: "The command + {{wd_system_command.cmd}} + failed "
+      when: wd_zos_module_result.failed == true or (wd_zos_module_result.rc == 0 and wd_system_command.success_message is defined and wd_system_command.success_message != ''  and wd_system_command.success_message not in wd_zos_module_result.content| join(' '))
+      
+  tags:
+    - system_command

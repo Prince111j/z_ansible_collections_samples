@@ -1,0 +1,46 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+
+# ZOWE CICS REFRESH - Using CMCI
+---
+- name: "[{{current_step_name}}]"
+  block:
+    - name: "[{{current_step_name}}]: Set action step variables"
+      set_fact:
+        task_step_result: {}
+        zowe_prm: ""
+
+    - name : "[{{current_step_name}}]: Retrieve the zowe command"
+      include_tasks: "task_zowe_cics_command.yml"
+
+    - name: "[{{current_step_name}}]: Perfom Zowe CLI CICS REFRESH "
+      shell: "zowe cics refresh program {{item}} {{zowe_prm}}"
+      delegate_to: localhost
+      register: cmci_action_update_program_result
+      ignore_errors: true
+      with_items: "{{ wd_step['artifacts'] | map(attribute='name') | default([])}}"
+
+    - name: "[{{current_step_name}}]: Collect the Zowe CLI CICS REFRESH result"
+      set_fact:
+        task_step_result: "{{ task_step_result | combine ({'cmci_action_update_program_result':cmci_action_update_program_result}) }}"
+
+    - name: "[{{current_step_name}}]: Register the Zowe CLI CICS REFRESH result"
+      set_fact:
+        deploy_result_tasks_steps: "{{ deploy_result_tasks_steps + [ task_step_result ] }}"
+
+    - name: "[{{current_step_name}}]: Check if Zowe CLI CICS REFRESH succeeded"
+      fail:
+        msg: "The Zowe CLI CICS REFRESH failed"
+      when: cmci_action_update_program_result is failed
+  tags:
+    - cics-cmci-prog-update
+
+  rescue:
+    - name : "[{{current_step_name}}]: Store the evidences"
+      include_tasks: "wd_failure.yml"

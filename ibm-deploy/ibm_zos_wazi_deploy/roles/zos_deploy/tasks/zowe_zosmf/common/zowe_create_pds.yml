@@ -1,0 +1,61 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}] Check and Create PDS(s)"
+  block:
+
+    - name: "[{{current_step_name}}]: Set action step variables"
+      set_fact:
+        task_step_result: {}
+
+    - name: "[{{current_step_name}}]: Check PDS(s) exist(s)"
+      shell: |
+         zowe zos-files list data-set {{item.dest}}\
+           --zosmf-profile {{zowe_profile}}
+      delegate_to: localhost
+      register: check_dataset_result
+      ignore_errors: true
+
+    - name: "[{{current_step_name}}]: Collect the create datasets result"
+      set_fact:
+        task_step_result: "{{ task_step_result | combine ({'check_dataset_result': check_dataset_result}) }}"
+
+    - name: "[{{current_step_name}}]: Create PDS(s)"
+      shell: |
+         zowe zos-files create data-set-partitioned {{item.dest}}\
+           --data-set-type {{item.dstype}}\
+           --record-format {{item.recfm}}\
+           --record-length {{item.length}}\
+           --size {{item.size}}\
+           --zosmf-profile {{zowe_profile}}
+      delegate_to: localhost
+      when:  item.dstype is defined and check_dataset_result.stdout == ''
+      register: create_datasets_result
+      ignore_errors: true
+
+    - name: "[{{current_step_name}}]: Collect the create PDS(s) result"
+      set_fact:
+        task_step_result: "{{ task_step_result | combine ({'create_datasets_result':create_datasets_result}) }}"
+
+    - name: "[{{current_step_name}}]: Check if create PDS(s) succeeded'"
+      fail:
+        msg: "The create datasets failed"
+      when: create_datasets_result is failed
+
+
+    - name: "[{{current_step_name}}]: Register the PDS(s) creation result"
+      set_fact:
+        deploy_result_tasks_steps: "{{ deploy_result_tasks_steps + [ task_step_result ] }}"
+
+  tags:
+   - create-datasets
+
+  rescue:
+    - name : "[{{current_step_name}}]: Store the evidences"
+      include_tasks: "wd_failure.yml"

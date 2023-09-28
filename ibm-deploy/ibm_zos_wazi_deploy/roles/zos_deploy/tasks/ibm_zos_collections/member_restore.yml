@@ -1,0 +1,47 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  block:
+
+    - set_fact:
+       wd_restore_list_items: "{{ wd_step['artifacts'] | ibm.ibm_zos_wazi_deploy.wd_artifact_list (wd_deploy_dir_uss, wd_types, False, False, wd_no_log_flag, True )}}"
+      vars:
+        wd_var_type: "{{ wd_step | json_query (\"properties[?key == 'var_type'].value\") | first | default(default_types if default_types is defined else 'types') }}"
+        wd_types: "{{ lookup('vars',  wd_var_type )}}"
+
+    - name: "[{{current_step_name}}]: Copy the member(s) from backup PDS(s) to PDS(s)"
+      include_tasks: "task_zos_copy.yml"
+      with_items: "{{ wd_restore_list_items| default([]) }}"
+      vars:
+        wd_zos_module:
+          src: "{{ item.src }}"
+          dest: "{{ item.dest }}"
+          remote_src: true
+          is_binary: "{{ item.is_binary }}"
+          ignore_error_message: "{{ 'Source data set ' + item.src + ' does not exist' }}"
+          backup: false
+          force: true
+      when:
+        - item.type.pds is defined
+        - member_restore_fast is not defined or member_restore_fast | bool == False
+
+    - name: "[{{current_step_name}}]: Copy the member(s) from backup PDS(s) to PDS(s) using shell command"
+      include_tasks: "task_fast_copy.yml"
+      vars:
+        wd_zos_module:
+          members: "{{ wd_restore_list_items| default([]) }}"
+          ignore_missing: true
+          is_backup: true
+      when:
+        - wd_restore_list_items[0].type.pds is defined
+        - member_restore_fast is defined and member_restore_fast | bool == True
+
+  tags:
+    - member_restore

@@ -1,0 +1,36 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2022. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  collections:
+    - ibm.ibm_zos_core
+  environment: "{{ environment_vars }}"
+  block:
+    - set_fact: 
+       wd_ignore_errors_var : "{{wd_zos_module.ignore_errors if wd_zos_module.ignore_errors is defined else False}}"
+       
+    - name: "[{{current_step_name}}]: Backup and restore data sets and volumes "
+      zos_backup_restore:
+        backup_name: "{{ wd_zos_module.backup_name | mandatory }}"
+        data_sets: 
+          include: "{{ wd_zos_module.include | default(omit) }}"
+          exclude: "{{ wd_zos_module.exclude | default(omit) }}"
+        full_volume: "{{ wd_zos_module.full_volume | default(omit) }}"  
+        hlq: "{{ wd_zos_module.hlq | default(omit) }}"  
+        operation: "{{ wd_zos_module.operation | mandatory }}"
+        overwrite: "{{ wd_zos_module.overwrite | default(omit) }}"  
+        recover: "{{ wd_zos_module.recover | default(omit) }}"  
+        sms_management_class: "{{ wd_zos_module.sms_management_class | default(omit) }}"
+        sms_storage_class: "{{ wd_zos_module.sms_storage_class  | default(omit) }}"
+        space: "{{ wd_zos_module.space | default(omit) }}"
+        space_type: "{{ wd_zos_module.space_type | default(omit) }}"
+        temp_volume: "{{ wd_zos_module.temp_volume | default(omit) }}"  
+        volume: "{{ wd_zos_module.volume | default(omit) }}"
+      register: wd_zos_module_result
+      ignore_errors: "{{wd_ignore_errors_var}}"

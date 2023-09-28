@@ -1,0 +1,32 @@
+#*******************************************************************************
+# Licensed Materials - Property of IBM
+# (c) Copyright IBM Corp. 2023. All Rights Reserved.
+#
+# Note to U.S. Government Users Restricted Rights:
+# Use, duplication or disclosure restricted by GSA ADP Schedule
+# Contract with IBM Corp.
+#*******************************************************************************
+---
+- name: "[{{current_step_name}}]"
+  collections:
+    - ibm.ibm_zos_core
+  environment: "{{ environment_vars }}"
+  block:
+    - set_fact: 
+       wd_ignore_errors_var : "{{wd_zos_module.ignore_errors if wd_zos_module.ignore_errors is defined else False}}"
+        
+    - name: "[{{current_step_name}}]: Fetch data set {{wd_zos_module.src}} from z/OS "
+      zos_fetch:
+        dest: "{{ wd_zos_module.dest | mandatory }}"
+        encoding: "{{ wd_zos_module.encoding | default(omit) }}"
+        fail_on_missing: "{{ wd_zos_module.fail_on_missing | default(omit) }}"
+        flat: "{{ wd_zos_module.flat | default(omit) }}"
+        ignore_sftp_stderr: "{{ wd_zos_module.ignore_sftp_stderr | default(omit) }}"
+        is_binary: "{{ wd_zos_module.is_binary | default(omit) }}"
+        sftp_port: "{{ wd_zos_module.sftp_port | default(omit) }}"
+        src: "{{ wd_zos_module.src | mandatory }}"
+        use_qualifier: "{{ wd_zos_module.use_qualifier | default(omit) }}"
+        validate_checksum: "{{ wd_zos_module.validate_checksum | default(omit) }}"
+      register: wd_zos_module_result
+      ignore_errors: "{{wd_ignore_errors_var}}"
+
