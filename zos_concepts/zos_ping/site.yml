@@ -29,5 +29,5 @@
       include_role:
 #        name: requirements-check
 
-- name: Executing the z/OS Ansible playbook
-  import_playbook: zos_ping.yaml
+#- name: Executing the z/OS Ansible playbook
+#  import_playbook: zos_ping.yaml
